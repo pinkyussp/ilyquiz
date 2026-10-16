@@ -167,14 +167,6 @@
       .menu a:hover {
         color: var(--accent);
       }
-      .menu a small {
-        display: block;
-        font-family: "Inter", system-ui, sans-serif;
-        font-size: 12px;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-        color: var(--muted);
-      }
 
       .card {
         background: var(--card);
@@ -328,6 +320,9 @@
       button.text:hover {
         color: var(--ink);
       }
+      button:disabled {
+        cursor: default;
+      }
 
       .row {
         display: flex;
@@ -449,15 +444,6 @@
         return el;
       }
 
-      function enc(str) {
-        const bytes = new TextEncoder().encode(str);
-        let bin = "";
-        bytes.forEach((b) => (bin += String.fromCharCode(b)));
-        return btoa(bin)
-          .replace(/\+/g, "-")
-          .replace(/\//g, "_")
-          .replace(/=+$/, "");
-      }
       function dec(str) {
         let s = str.replace(/-/g, "+").replace(/_/g, "/");
         while (s.length % 4) s += "=";
@@ -586,7 +572,7 @@
         );
       }
 
-      function makeLink() {
+      async function makeLink() {
         const qs = draft.qs
           .map((qq) => {
             const opts = qq.opts.map((o) => o.trim()).filter(Boolean);
@@ -609,68 +595,94 @@
           return;
         }
 
-        const data = { n: draft.name.trim(), qs };
-        const link =
-          location.href.split("#")[0] + "#q=" + enc(JSON.stringify(data));
-        const input = h("input", {
-          readonly: true,
-          value: link,
-          onclick: (e) => e.target.select(),
-        });
-        const copyBtn = h(
-          "button",
-          {
-            class: "primary",
-            onclick: () => {
-              const done = () => (copyBtn.textContent = "Copied");
-              if (navigator.clipboard)
-                navigator.clipboard
-                  .writeText(link)
-                  .then(done)
-                  .catch(() => {
-                    input.select();
-                    document.execCommand("copy");
-                    done();
-                  });
-              else {
-                input.select();
-                document.execCommand("copy");
-                done();
-              }
-            },
-          },
-          "Copy link",
-        );
+        out.replaceChildren(h("p", { class: "note" }, "Creating your link..."));
+        try {
+          const res = await fetch("/api/create", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ n: draft.name.trim(), qs }),
+          });
+          const data = await res.json();
+          if (!res.ok)
+            throw new Error(data.error || "Could not create the quiz.");
 
-        out.replaceChildren(
-          h(
-            "p",
-            { class: "note" },
-            "Send this to them. Everything is inside the link, so no account is needed.",
-          ),
-          input,
-          h(
-            "div",
-            { class: "row" },
-            copyBtn,
-            h(
-              "button",
-              {
-                class: "ghost",
-                onclick: () => {
-                  location.hash = "q=" + enc(JSON.stringify(data));
-                },
+          const link = `${location.origin}/q/${data.id}`;
+          const input = h("input", {
+            readonly: true,
+            value: link,
+            onclick: (e) => e.target.select(),
+          });
+          const copyBtn = h(
+            "button",
+            {
+              class: "primary",
+              onclick: () => {
+                const done = () => (copyBtn.textContent = "Copied");
+                if (navigator.clipboard)
+                  navigator.clipboard
+                    .writeText(link)
+                    .then(done)
+                    .catch(() => {
+                      input.select();
+                      document.execCommand("copy");
+                      done();
+                    });
+                else {
+                  input.select();
+                  document.execCommand("copy");
+                  done();
+                }
               },
-              "Preview",
+            },
+            "Copy link",
+          );
+
+          out.replaceChildren(
+            h(
+              "p",
+              { class: "note" },
+              "Send this to them. It works on any device.",
             ),
-          ),
-        );
+            input,
+            h(
+              "div",
+              { class: "row" },
+              copyBtn,
+              h(
+                "a",
+                {
+                  class: "ghost",
+                  href: `/q/${data.id}`,
+                  style:
+                    "display:flex;align-items:center;justify-content:center;text-decoration:none;color:var(--ink);border:1px solid var(--rule);border-radius:4px;padding:11px 18px;font-size:15px;flex:1",
+                },
+                "Open",
+              ),
+            ),
+          );
+        } catch (err) {
+          out.replaceChildren(h("p", { class: "err" }, err.message));
+        }
       }
 
       let quiz = null,
         idx = 0,
         score = 0,
         picked = null;
+
+      async function checkAnswer(qi, choice) {
+        if (quiz.local) {
+          const q = quiz.qs[qi];
+          return { correct: choice === q.ans, answer: q.ans };
+        }
+        const res = await fetch("/api/answer", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: quiz.id, qi, choice }),
+        });
+        if (!res.ok) throw new Error("Could not check that answer. Try again.");
+        return res.json();
+      }
 
       function renderIntro() {
         app.replaceChildren(
@@ -698,7 +710,7 @@
             ),
             h(
               "button",
-              { class: "text", onclick: leaveQuiz },
+              { class: "text", onclick: () => (location.href = "/") },
               "Make your own quiz",
             ),
           ),
@@ -710,30 +722,40 @@
         picked = null;
         const fb = h("p", { class: "feedback" });
         const nextSlot = h("div", {});
-        const btns = qq.opts.map((o, j) =>
-          h("button", { class: "answer", onclick: () => pick(j) }, o),
-        );
+        let btns = [];
 
-        function pick(j) {
+        async function pick(j) {
           if (picked !== null) return;
           picked = j;
-          btns.forEach((b, k) => {
-            b.disabled = true;
-            if (k === qq.ans) b.classList.add("right");
-            else if (k === j) b.classList.add("wrong");
-          });
-          if (j === qq.ans) {
-            score++;
-            fb.textContent = "Correct. You know them well.";
-          } else fb.textContent = "Not quite. It's fine.";
-          nextSlot.append(
-            h(
-              "button",
-              { class: "primary", onclick: next },
-              idx + 1 < quiz.qs.length ? "Next" : "See results",
-            ),
-          );
+          btns.forEach((b) => (b.disabled = true));
+          try {
+            const r = await checkAnswer(idx, j);
+            if (r.correct) {
+              score++;
+              fb.textContent = "Correct. You know them well.";
+              btns[j].classList.add("right");
+            } else {
+              fb.textContent = "Not quite. It's fine.";
+              btns[j].classList.add("wrong");
+              btns[r.answer].classList.add("right");
+            }
+            nextSlot.append(
+              h(
+                "button",
+                { class: "primary", onclick: next },
+                idx + 1 < quiz.qs.length ? "Next" : "See results",
+              ),
+            );
+          } catch (err) {
+            picked = null;
+            btns.forEach((b) => (b.disabled = false));
+            fb.textContent = err.message;
+          }
         }
+
+        btns = qq.opts.map((o, j) =>
+          h("button", { class: "answer", onclick: () => pick(j) }, o),
+        );
 
         app.replaceChildren(
           h(
@@ -788,52 +810,70 @@
             ),
             h(
               "button",
-              { class: "text", onclick: leaveQuiz },
+              { class: "text", onclick: () => (location.href = "/") },
               "Make your own quiz",
             ),
           ),
         );
       }
 
-      function leaveQuiz() {
-        history.replaceState(null, "", location.href.split("#")[0]);
-        route();
+      function renderError() {
+        app.replaceChildren(
+          h(
+            "div",
+            { class: "card center" },
+            h("p", { class: "label" }, "Error"),
+            h("h1", {}, "This link is broken"),
+            h("p", { class: "sub" }, "Ask them to send it again."),
+            h(
+              "button",
+              { class: "primary", onclick: () => (location.href = "/") },
+              "Make your own quiz",
+            ),
+          ),
+        );
+      }
+
+      async function loadRemote(id) {
+        app.replaceChildren(
+          h(
+            "div",
+            { class: "card center" },
+            h("p", { class: "label" }, "Loading..."),
+          ),
+        );
+        try {
+          const res = await fetch(`/api/quiz?id=${encodeURIComponent(id)}`);
+          if (!res.ok) throw new Error("not found");
+          const data = await res.json();
+          quiz = { n: data.n, qs: data.qs, id, local: false };
+          renderIntro();
+        } catch (e) {
+          renderError();
+        }
       }
 
       function route() {
-        const m = location.hash.match(/^#q=(.+)$/);
-        if (m) {
+        const m = location.pathname.match(/^\/q\/([A-Za-z0-9_-]+)\/?$/);
+        if (m) return loadRemote(m[1]);
+
+        if (location.hash.startsWith("#q=")) {
           try {
-            const data = JSON.parse(dec(m[1]));
+            const data = JSON.parse(dec(location.hash.slice(3)));
             const qs = (data.qs || []).filter(
               (q) => q && q.q && Array.isArray(q.opts) && q.opts.length >= 2,
             );
             if (!qs.length) throw new Error("empty");
-            quiz = { n: String(data.n || "Someone"), qs };
-            renderIntro();
-            return;
+            quiz = { n: String(data.n || "Someone"), qs, local: true };
+            return renderIntro();
           } catch (e) {
-            app.replaceChildren(
-              h(
-                "div",
-                { class: "card center" },
-                h("p", { class: "label" }, "Error"),
-                h("h1", {}, "This link is broken"),
-                h("p", { class: "sub" }, "Ask them to send it again."),
-                h(
-                  "button",
-                  { class: "primary", onclick: leaveQuiz },
-                  "Make your own quiz",
-                ),
-              ),
-            );
-            return;
+            return renderError();
           }
         }
+
         renderBuilder();
       }
 
-      window.addEventListener("hashchange", route);
       route();
     </script>
   </body>
