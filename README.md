@@ -11,9 +11,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/made%20with-%E2%99%A1%20love-f3c6d8?style=flat-square" />
-  <img src="https://img.shields.io/badge/vibe-pink%20%26%20cozy-f8dce8?style=flat-square" />
-  <img src="https://img.shields.io/badge/status-in%20progress-e8b5ca?style=flat-square" />
+  <img src="https://img.shields.io/badge/made%20with%20love%20by-amy-f3c6d8?style=flat-square" />
 </p>
 
 ---
@@ -71,5 +69,5 @@ This little website lets you put that to the test! Answer questions about yourse
   <br/>
   <sub>a tiny project for the people who mean the most ♡</sub>
   <br/><br/>
-  <a href="https://github.com/bluenotthecolor">made by bluenotthecolor</a>
+  <a href="https://github.com/bluenotthecolor">made by amy</a>
 </p>
