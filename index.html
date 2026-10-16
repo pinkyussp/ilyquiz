@@ -1,0 +1,840 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>How well do you know me?</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --paper: #f3ede3;
+        --card: #faf7f1;
+        --ink: #2e2622;
+        --muted: #7d706a;
+        --rule: #ddd3c5;
+        --accent: #a4543f;
+        --ok: #4f6b4a;
+        --ok-bg: #e4ebdc;
+        --no: #8a3b33;
+        --no-bg: #f1dfd9;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        min-height: 100%;
+      }
+      body {
+        margin: 0;
+        background: var(--paper);
+        color: var(--ink);
+        font-family:
+          "Inter",
+          system-ui,
+          -apple-system,
+          "Segoe UI",
+          sans-serif;
+        font-size: 16px;
+        line-height: 1.5;
+        -webkit-font-smoothing: antialiased;
+        padding: 104px 16px 64px;
+      }
+      #app {
+        max-width: 460px;
+        margin: 0 auto;
+      }
+
+      .topbar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 64px;
+        z-index: 100;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 16px 0 20px;
+        background: var(--paper);
+        border-bottom: 1px solid var(--rule);
+      }
+      .brand {
+        font-family: "Fraunces", Georgia, serif;
+        font-size: 20px;
+        font-weight: 600;
+        color: var(--ink);
+        text-decoration: none;
+      }
+      .menu-btn {
+        position: relative;
+        width: 44px;
+        height: 44px;
+        padding: 0;
+        background: none;
+        border: none;
+        cursor: pointer;
+        border-radius: 4px;
+      }
+      .menu-btn span {
+        position: absolute;
+        left: 11px;
+        right: 11px;
+        height: 1.5px;
+        background: var(--ink);
+        transition:
+          transform 0.4s cubic-bezier(0.7, 0, 0.2, 1),
+          opacity 0.2s,
+          top 0.4s cubic-bezier(0.7, 0, 0.2, 1);
+      }
+      .menu-btn span:nth-child(1) {
+        top: 15px;
+      }
+      .menu-btn span:nth-child(2) {
+        top: 21px;
+      }
+      .menu-btn span:nth-child(3) {
+        top: 27px;
+      }
+      .menu-btn.open span:nth-child(1) {
+        top: 21px;
+        transform: rotate(45deg);
+      }
+      .menu-btn.open span:nth-child(2) {
+        opacity: 0;
+      }
+      .menu-btn.open span:nth-child(3) {
+        top: 21px;
+        transform: rotate(-45deg);
+      }
+      .menu-btn:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+      }
+
+      .menu {
+        position: fixed;
+        inset: 0;
+        z-index: 90;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(243, 237, 227, 0.6);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        opacity: 0;
+        visibility: hidden;
+        transition:
+          opacity 0.4s ease,
+          visibility 0.4s;
+      }
+      .menu.open {
+        opacity: 1;
+        visibility: visible;
+      }
+      .menu nav {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        text-align: center;
+      }
+      .menu a {
+        font-family: "Fraunces", Georgia, serif;
+        font-size: clamp(2.2rem, 9vw, 3.6rem);
+        font-weight: 600;
+        color: var(--ink);
+        text-decoration: none;
+        padding: 4px 12px;
+        opacity: 0;
+        transform: translateY(20px);
+        transition:
+          opacity 0.45s ease,
+          transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1),
+          color 0.2s;
+        transition-delay: calc(var(--i) * 70ms);
+      }
+      .menu.open a {
+        opacity: 1;
+        transform: none;
+        transition-delay:
+          calc(120ms + var(--i) * 70ms), calc(120ms + var(--i) * 70ms), 0s;
+      }
+      .menu a:hover {
+        color: var(--accent);
+      }
+      .menu a small {
+        display: block;
+        font-family: "Inter", system-ui, sans-serif;
+        font-size: 12px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      .card {
+        background: var(--card);
+        border: 1px solid var(--rule);
+        border-radius: 6px;
+        padding: 32px 28px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+      .center {
+        text-align: center;
+        align-items: center;
+      }
+
+      .label {
+        margin: 0;
+        font-size: 12px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      h1,
+      h2 {
+        font-family: "Fraunces", Georgia, serif;
+        font-weight: 600;
+        margin: 0;
+        line-height: 1.2;
+        letter-spacing: -0.01em;
+      }
+      h1 {
+        font-size: 30px;
+      }
+      h2 {
+        font-size: 22px;
+      }
+      .sub {
+        margin: 0;
+        color: var(--muted);
+      }
+      .note {
+        margin: 0;
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .feedback {
+        margin: 0;
+        min-height: 1.5em;
+        color: var(--ink);
+        font-size: 15px;
+      }
+      .err {
+        margin: 0;
+        color: var(--no);
+      }
+
+      label.field {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        font-size: 14px;
+        color: var(--muted);
+      }
+
+      input[type="text"],
+      input[readonly] {
+        width: 100%;
+        font: inherit;
+        font-size: 15px;
+        color: var(--ink);
+        background: #fff;
+        border: 1px solid var(--rule);
+        border-radius: 4px;
+        padding: 10px 12px;
+        outline: none;
+      }
+      input[type="text"]:focus {
+        border-color: var(--accent);
+      }
+      input[readonly] {
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .question {
+        border-top: 1px solid var(--rule);
+        padding-top: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .qhead {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 12px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .opt {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .opt input[type="radio"] {
+        accent-color: var(--accent);
+        width: 16px;
+        height: 16px;
+        margin: 0;
+        flex: none;
+      }
+
+      button {
+        font: inherit;
+        font-size: 15px;
+        cursor: pointer;
+        border-radius: 4px;
+        padding: 11px 18px;
+        transition:
+          background 0.15s,
+          color 0.15s,
+          border-color 0.15s;
+      }
+      button.primary {
+        background: var(--ink);
+        color: var(--card);
+        border: 1px solid var(--ink);
+      }
+      button.primary:hover {
+        background: var(--accent);
+        border-color: var(--accent);
+      }
+      button.ghost {
+        background: transparent;
+        color: var(--ink);
+        border: 1px solid var(--rule);
+      }
+      button.ghost:hover {
+        border-color: var(--ink);
+      }
+      button.text {
+        background: none;
+        border: none;
+        padding: 0;
+        font-size: 13px;
+        color: var(--muted);
+        text-decoration: underline;
+        text-underline-offset: 3px;
+      }
+      button.text:hover {
+        color: var(--ink);
+      }
+
+      .row {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .row > button {
+        flex: 1;
+      }
+      .stack {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .answer {
+        display: block;
+        width: 100%;
+        text-align: left;
+        background: #fff;
+        color: var(--ink);
+        border: 1px solid var(--rule);
+        border-radius: 4px;
+        padding: 12px 14px;
+      }
+      .answer:hover:not(:disabled) {
+        border-color: var(--ink);
+      }
+      .answer:disabled {
+        cursor: default;
+      }
+      .answer.right {
+        background: var(--ok-bg);
+        border-color: var(--ok);
+        color: var(--ok);
+      }
+      .answer.wrong {
+        background: var(--no-bg);
+        border-color: var(--no);
+        color: var(--no);
+      }
+
+      #out {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      #out:empty {
+        display: none;
+      }
+      .score {
+        font-family: "Fraunces", Georgia, serif;
+        font-size: 56px;
+        font-weight: 600;
+        line-height: 1;
+        margin: 8px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="/">Quiz</a>
+      <button
+        class="menu-btn"
+        id="menuBtn"
+        aria-label="Open menu"
+        aria-expanded="false"
+        aria-controls="menu"
+      >
+        <span></span><span></span><span></span>
+      </button>
+    </header>
+
+    <div class="menu" id="menu" aria-hidden="true">
+      <nav>
+        <a href="/" style="--i: 0">Make a quiz</a>
+        <a href="/socials/" style="--i: 1">Socials</a>
+      </nav>
+    </div>
+
+    <div id="app"></div>
+
+    <script>
+      const menuBtn = document.getElementById("menuBtn");
+      const menu = document.getElementById("menu");
+
+      function setMenu(open) {
+        menu.classList.toggle("open", open);
+        menuBtn.classList.toggle("open", open);
+        menuBtn.setAttribute("aria-expanded", String(open));
+        menuBtn.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+        menu.setAttribute("aria-hidden", String(!open));
+        document.body.style.overflow = open ? "hidden" : "";
+      }
+      menuBtn.addEventListener("click", () =>
+        setMenu(!menu.classList.contains("open")),
+      );
+      menu.addEventListener("click", (e) => {
+        if (e.target === menu) setMenu(false);
+      });
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") setMenu(false);
+      });
+
+      const app = document.querySelector("#app");
+
+      function h(tag, attrs = {}, ...kids) {
+        const el = document.createElement(tag);
+        for (const [k, v] of Object.entries(attrs)) {
+          if (k === "class") el.className = v;
+          else if (k.startsWith("on")) el.addEventListener(k.slice(2), v);
+          else if (v !== undefined && v !== null && v !== false)
+            el.setAttribute(k, v === true ? "" : v);
+        }
+        for (const kid of kids.flat()) {
+          if (kid === null || kid === undefined || kid === false) continue;
+          el.append(kid.nodeType ? kid : document.createTextNode(String(kid)));
+        }
+        return el;
+      }
+
+      function enc(str) {
+        const bytes = new TextEncoder().encode(str);
+        let bin = "";
+        bytes.forEach((b) => (bin += String.fromCharCode(b)));
+        return btoa(bin)
+          .replace(/\+/g, "-")
+          .replace(/\//g, "_")
+          .replace(/=+$/, "");
+      }
+      function dec(str) {
+        let s = str.replace(/-/g, "+").replace(/_/g, "/");
+        while (s.length % 4) s += "=";
+        const bin = atob(s);
+        return new TextDecoder().decode(
+          Uint8Array.from(bin, (c) => c.charCodeAt(0)),
+        );
+      }
+
+      let draft = { name: "", qs: [{ q: "", opts: ["", ""], ans: 0 }] };
+
+      function renderBuilder() {
+        app.replaceChildren(
+          h(
+            "div",
+            { class: "card" },
+            h("p", { class: "label" }, "Make a quiz"),
+            h("h1", {}, "How well do they know you?"),
+            h(
+              "p",
+              { class: "sub" },
+              "Write a few questions about yourself, mark the right answer for each, then send them the link.",
+            ),
+            h(
+              "label",
+              { class: "field" },
+              "Your name",
+              h("input", {
+                type: "text",
+                value: draft.name,
+                placeholder: "Your name",
+                oninput: (e) => (draft.name = e.target.value),
+              }),
+            ),
+            ...draft.qs.map((qq, i) => questionEditor(qq, i)),
+            h(
+              "div",
+              { class: "row" },
+              h(
+                "button",
+                {
+                  class: "ghost",
+                  onclick: () => {
+                    draft.qs.push({ q: "", opts: ["", ""], ans: 0 });
+                    renderBuilder();
+                  },
+                },
+                "Add question",
+              ),
+              h("button", { class: "primary", onclick: makeLink }, "Get link"),
+            ),
+            h("div", { id: "out" }),
+          ),
+        );
+      }
+
+      function questionEditor(qq, i) {
+        return h(
+          "div",
+          { class: "question" },
+          h(
+            "div",
+            { class: "qhead" },
+            h("span", {}, `Question ${i + 1}`),
+            draft.qs.length > 1
+              ? h(
+                  "button",
+                  {
+                    class: "text",
+                    onclick: () => {
+                      draft.qs.splice(i, 1);
+                      renderBuilder();
+                    },
+                  },
+                  "Remove",
+                )
+              : null,
+          ),
+          h("input", {
+            type: "text",
+            value: qq.q,
+            placeholder: "Question",
+            oninput: (e) => (qq.q = e.target.value),
+          }),
+          ...qq.opts.map((o, j) =>
+            h(
+              "div",
+              { class: "opt" },
+              h("input", {
+                type: "radio",
+                name: "ans" + i,
+                checked: qq.ans === j,
+                title: "Correct answer",
+                onchange: () => (qq.ans = j),
+              }),
+              h("input", {
+                type: "text",
+                value: o,
+                placeholder: "Answer " + (j + 1),
+                oninput: (e) => (qq.opts[j] = e.target.value),
+              }),
+            ),
+          ),
+          h(
+            "div",
+            { class: "row" },
+            qq.opts.length < 4
+              ? h(
+                  "button",
+                  {
+                    class: "text",
+                    onclick: () => {
+                      qq.opts.push("");
+                      renderBuilder();
+                    },
+                  },
+                  "Add answer",
+                )
+              : null,
+            h(
+              "span",
+              { class: "note" },
+              "Select the circle next to the correct answer.",
+            ),
+          ),
+        );
+      }
+
+      function makeLink() {
+        const qs = draft.qs
+          .map((qq) => {
+            const opts = qq.opts.map((o) => o.trim()).filter(Boolean);
+            const correct = (qq.opts[qq.ans] || "").trim();
+            let ans = opts.indexOf(correct);
+            if (ans < 0) ans = 0;
+            return { q: qq.q.trim(), opts, ans };
+          })
+          .filter((x) => x.q && x.opts.length >= 2);
+
+        const out = document.querySelector("#out");
+        if (!draft.name.trim() || !qs.length) {
+          out.replaceChildren(
+            h(
+              "p",
+              { class: "err" },
+              "Add your name and at least one question with two answers.",
+            ),
+          );
+          return;
+        }
+
+        const data = { n: draft.name.trim(), qs };
+        const link =
+          location.href.split("#")[0] + "#q=" + enc(JSON.stringify(data));
+        const input = h("input", {
+          readonly: true,
+          value: link,
+          onclick: (e) => e.target.select(),
+        });
+        const copyBtn = h(
+          "button",
+          {
+            class: "primary",
+            onclick: () => {
+              const done = () => (copyBtn.textContent = "Copied");
+              if (navigator.clipboard)
+                navigator.clipboard
+                  .writeText(link)
+                  .then(done)
+                  .catch(() => {
+                    input.select();
+                    document.execCommand("copy");
+                    done();
+                  });
+              else {
+                input.select();
+                document.execCommand("copy");
+                done();
+              }
+            },
+          },
+          "Copy link",
+        );
+
+        out.replaceChildren(
+          h(
+            "p",
+            { class: "note" },
+            "Send this to them. Everything is inside the link, so no account is needed.",
+          ),
+          input,
+          h(
+            "div",
+            { class: "row" },
+            copyBtn,
+            h(
+              "button",
+              {
+                class: "ghost",
+                onclick: () => {
+                  location.hash = "q=" + enc(JSON.stringify(data));
+                },
+              },
+              "Preview",
+            ),
+          ),
+        );
+      }
+
+      let quiz = null,
+        idx = 0,
+        score = 0,
+        picked = null;
+
+      function renderIntro() {
+        app.replaceChildren(
+          h(
+            "div",
+            { class: "card center" },
+            h("p", { class: "label" }, "A quiz for you"),
+            h("h1", {}, `${quiz.n} made you a quiz`),
+            h(
+              "p",
+              { class: "sub" },
+              `${quiz.qs.length} questions. No pressure.`,
+            ),
+            h(
+              "button",
+              {
+                class: "primary",
+                onclick: () => {
+                  idx = 0;
+                  score = 0;
+                  renderQ();
+                },
+              },
+              "Start",
+            ),
+            h(
+              "button",
+              { class: "text", onclick: leaveQuiz },
+              "Make your own quiz",
+            ),
+          ),
+        );
+      }
+
+      function renderQ() {
+        const qq = quiz.qs[idx];
+        picked = null;
+        const fb = h("p", { class: "feedback" });
+        const nextSlot = h("div", {});
+        const btns = qq.opts.map((o, j) =>
+          h("button", { class: "answer", onclick: () => pick(j) }, o),
+        );
+
+        function pick(j) {
+          if (picked !== null) return;
+          picked = j;
+          btns.forEach((b, k) => {
+            b.disabled = true;
+            if (k === qq.ans) b.classList.add("right");
+            else if (k === j) b.classList.add("wrong");
+          });
+          if (j === qq.ans) {
+            score++;
+            fb.textContent = "Correct. You know them well.";
+          } else fb.textContent = "Not quite. It's fine.";
+          nextSlot.append(
+            h(
+              "button",
+              { class: "primary", onclick: next },
+              idx + 1 < quiz.qs.length ? "Next" : "See results",
+            ),
+          );
+        }
+
+        app.replaceChildren(
+          h(
+            "div",
+            { class: "card" },
+            h(
+              "p",
+              { class: "label" },
+              `Question ${idx + 1} of ${quiz.qs.length}`,
+            ),
+            h("h2", {}, qq.q),
+            h("div", { class: "stack" }, ...btns),
+            fb,
+            nextSlot,
+          ),
+        );
+      }
+
+      function next() {
+        idx++;
+        if (idx >= quiz.qs.length) renderResults();
+        else renderQ();
+      }
+
+      function renderResults() {
+        const total = quiz.qs.length;
+        const r = score / total;
+        const msg =
+          r === 1
+            ? "A perfect score. They really know you."
+            : r >= 0.6
+              ? "Pretty close. A few things to learn."
+              : "Time for more conversations.";
+        app.replaceChildren(
+          h(
+            "div",
+            { class: "card center" },
+            h("p", { class: "label" }, "Results"),
+            h("div", { class: "score" }, `${score} / ${total}`),
+            h("p", { class: "sub" }, msg),
+            h(
+              "button",
+              {
+                class: "primary",
+                onclick: () => {
+                  idx = 0;
+                  score = 0;
+                  renderQ();
+                },
+              },
+              "Try again",
+            ),
+            h(
+              "button",
+              { class: "text", onclick: leaveQuiz },
+              "Make your own quiz",
+            ),
+          ),
+        );
+      }
+
+      function leaveQuiz() {
+        history.replaceState(null, "", location.href.split("#")[0]);
+        route();
+      }
+
+      function route() {
+        const m = location.hash.match(/^#q=(.+)$/);
+        if (m) {
+          try {
+            const data = JSON.parse(dec(m[1]));
+            const qs = (data.qs || []).filter(
+              (q) => q && q.q && Array.isArray(q.opts) && q.opts.length >= 2,
+            );
+            if (!qs.length) throw new Error("empty");
+            quiz = { n: String(data.n || "Someone"), qs };
+            renderIntro();
+            return;
+          } catch (e) {
+            app.replaceChildren(
+              h(
+                "div",
+                { class: "card center" },
+                h("p", { class: "label" }, "Error"),
+                h("h1", {}, "This link is broken"),
+                h("p", { class: "sub" }, "Ask them to send it again."),
+                h(
+                  "button",
+                  { class: "primary", onclick: leaveQuiz },
+                  "Make your own quiz",
+                ),
+              ),
+            );
+            return;
+          }
+        }
+        renderBuilder();
+      }
+
+      window.addEventListener("hashchange", route);
+      route();
+    </script>
+  </body>
+</html>

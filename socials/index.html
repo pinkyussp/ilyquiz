@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Socials</title>
+    <style>
+      :root {
+        --paper: #f3ede3;
+        --ink: #2e2622;
+        --muted: #7d706a;
+        --rule: #ddd3c5;
+        --accent: #a4543f;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        min-height: 100%;
+      }
+      body {
+        margin: 0;
+        background: var(--paper);
+        color: var(--ink);
+        font-family:
+          "Inter",
+          system-ui,
+          -apple-system,
+          "Segoe UI",
+          sans-serif;
+        font-size: 16px;
+        line-height: 1.5;
+        -webkit-font-smoothing: antialiased;
+        min-height: 100vh;
+        padding: 104px 16px 64px;
+      }
+
+      .topbar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 64px;
+        z-index: 100;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 16px 0 20px;
+        background: var(--paper);
+        border-bottom: 1px solid var(--rule);
+      }
+      .brand {
+        font-family: "Fraunces", Georgia, serif;
+        font-size: 20px;
+        font-weight: 600;
+        color: var(--ink);
+        text-decoration: none;
+      }
+      .menu-btn {
+        position: relative;
+        width: 44px;
+        height: 44px;
+        padding: 0;
+        background: none;
+        border: none;
+        cursor: pointer;
+        border-radius: 4px;
+      }
+      .menu-btn span {
+        position: absolute;
+        left: 11px;
+        right: 11px;
+        height: 1.5px;
+        background: var(--ink);
+        transition:
+          transform 0.4s cubic-bezier(0.7, 0, 0.2, 1),
+          opacity 0.2s,
+          top 0.4s cubic-bezier(0.7, 0, 0.2, 1);
+      }
+      .menu-btn span:nth-child(1) {
+        top: 15px;
+      }
+      .menu-btn span:nth-child(2) {
+        top: 21px;
+      }
+      .menu-btn span:nth-child(3) {
+        top: 27px;
+      }
+      .menu-btn.open span:nth-child(1) {
+        top: 21px;
+        transform: rotate(45deg);
+      }
+      .menu-btn.open span:nth-child(2) {
+        opacity: 0;
+      }
+      .menu-btn.open span:nth-child(3) {
+        top: 21px;
+        transform: rotate(-45deg);
+      }
+      .menu-btn:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+      }
+
+      .menu {
+        position: fixed;
+        inset: 0;
+        z-index: 90;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(243, 237, 227, 0.6);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        opacity: 0;
+        visibility: hidden;
+        transition:
+          opacity 0.4s ease,
+          visibility 0.4s;
+      }
+      .menu.open {
+        opacity: 1;
+        visibility: visible;
+      }
+      .menu nav {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        text-align: center;
+      }
+      .menu a {
+        font-family: "Fraunces", Georgia, serif;
+        font-size: clamp(2.2rem, 9vw, 3.6rem);
+        font-weight: 600;
+        color: var(--ink);
+        text-decoration: none;
+        padding: 4px 12px;
+        opacity: 0;
+        transform: translateY(20px);
+        transition:
+          opacity 0.45s ease,
+          transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1),
+          color 0.2s;
+        transition-delay: calc(var(--i) * 70ms);
+      }
+      .menu.open a {
+        opacity: 1;
+        transform: none;
+        transition-delay:
+          calc(120ms + var(--i) * 70ms), calc(120ms + var(--i) * 70ms), 0s;
+      }
+      .menu a:hover {
+        color: var(--accent);
+      }
+
+      .socials {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+        column-gap: 28px;
+        row-gap: 20px;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+      .socials a {
+        display: grid;
+        place-items: center;
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        border: 1px solid var(--rule);
+        transition:
+          border-color 0.2s,
+          transform 0.2s;
+        flex: none;
+      }
+      .socials a:hover,
+      .socials a:focus-visible {
+        border-color: var(--accent);
+        transform: translateY(-2px);
+        outline: none;
+      }
+      .socials svg {
+        width: 20px;
+        height: 20px;
+        display: block;
+        color: var(--ink);
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.6;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      .back {
+        display: block;
+        width: fit-content;
+        margin: 56px auto 0;
+        font-size: 14px;
+        color: var(--muted);
+        text-decoration: underline;
+        text-underline-offset: 3px;
+      }
+      .back:hover {
+        color: var(--ink);
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="/">Quiz</a>
+      <button
+        class="menu-btn"
+        id="menuBtn"
+        aria-label="Open menu"
+        aria-expanded="false"
+        aria-controls="menu"
+      >
+        <span></span><span></span><span></span>
+      </button>
+    </header>
+
+    <div class="menu" id="menu" aria-hidden="true">
+      <nav>
+        <a href="/" style="--i: 0">Make a quiz</a>
+        <a href="/socials/" style="--i: 1">Socials</a>
+      </nav>
+    </div>
+
+    <main>
+      <ul class="socials">
+        <li>
+          <a
+            href="https://www.instagram.com/pink.yussp/"
+            target="_blank"
+            rel="noopener"
+            aria-label="Instagram"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="3" y="3" width="18" height="18" rx="5" />
+              <circle cx="12" cy="12" r="4" />
+              <circle
+                cx="17.5"
+                cy="6.5"
+                r="0.9"
+                fill="currentColor"
+                stroke="none"
+              />
+            </svg>
+          </a>
+        </li>
+        <li>
+          <a
+            href="https://www.threads.com/@pink.yussp"
+            target="_blank"
+            rel="noopener"
+            aria-label="Threads"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <text
+                x="12"
+                y="18"
+                text-anchor="middle"
+                font-size="19"
+                font-family="Georgia, serif"
+                fill="currentColor"
+                stroke="none"
+              >
+                @
+              </text>
+            </svg>
+          </a>
+        </li>
+        <li>
+          <a
+            href="https://discord.com/users/1244917548898717779"
+            target="_blank"
+            rel="noopener"
+            aria-label="Discord"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M7.5 6.5C9 5.8 10.4 5.5 12 5.5s3 .3 4.5 1c1.2 2 1.9 4.2 2 7-1.2 1.2-2.6 2-4 2.3l-.9-1.5c.6-.2 1.1-.5 1.6-.9-2.2.9-4.5.9-6.7 0 .5.4 1 .7 1.6.9l-.9 1.5c-1.4-.3-2.8-1.1-4-2.3.1-2.8.8-5 2-7z"
+              />
+              <circle
+                cx="9.5"
+                cy="12"
+                r="1"
+                fill="currentColor"
+                stroke="none"
+              />
+              <circle
+                cx="14.5"
+                cy="12"
+                r="1"
+                fill="currentColor"
+                stroke="none"
+              />
+            </svg>
+          </a>
+        </li>
+        <li>
+          <a
+            href="https://x.com/ayyymiee"
+            target="_blank"
+            rel="noopener"
+            aria-label="X"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4.5 4.5l15 15M19.5 4.5l-15 15" />
+            </svg>
+          </a>
+        </li>
+        <li>
+          <a
+            href="https://github.com/bluenotthecolor?tab=repositories"
+            target="_blank"
+            rel="noopener"
+            aria-label="GitHub"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M9 18c-4.5 1.5-4.5-2.5-6.5-3m13 6v-3.2c0-1 .1-1.6-.5-2.2 2.7-.3 5.5-1.3 5.5-5.9 0-1.2-.4-2.3-1.2-3.2.1-.4.4-1.6-.1-3.1 0 0-1-.3-3.3 1.2a11.4 11.4 0 0 0-6 0C6.6 2.2 5.6 2.5 5.6 2.5c-.5 1.5-.2 2.7-.1 3.1-.8.9-1.2 2-1.2 3.2 0 4.6 2.8 5.6 5.5 5.9-.6.5-.6 1.5-.5 2.3V21"
+              />
+            </svg>
+          </a>
+        </li>
+      </ul>
+
+      <a class="back" href="/">Back to the quiz</a>
+    </main>
+
+    <script>
+      const menuBtn = document.getElementById("menuBtn");
+      const menu = document.getElementById("menu");
+
+      function setMenu(open) {
+        menu.classList.toggle("open", open);
+        menuBtn.classList.toggle("open", open);
+        menuBtn.setAttribute("aria-expanded", String(open));
+        menuBtn.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+        menu.setAttribute("aria-hidden", String(!open));
+        document.body.style.overflow = open ? "hidden" : "";
+      }
+      menuBtn.addEventListener("click", () =>
+        setMenu(!menu.classList.contains("open")),
+      );
+      menu.addEventListener("click", (e) => {
+        if (e.target === menu) setMenu(false);
+      });
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") setMenu(false);
+      });
+    </script>
+  </body>
+</html>
