@@ -466,6 +466,11 @@
         gap: 6px;
         font-size: 14px;
       }
+      .answer.pending {
+        border-style: dashed;
+        border-color: var(--accent);
+        color: var(--muted);
+      }
     </style>
   </head>
   <body>
@@ -920,8 +925,11 @@
           picked = j;
           answers[idx] = j;
           btns.forEach((b) => (b.disabled = true));
+          btns[j].classList.add("pending");
+          fb.textContent = "Checking...";
           try {
             const r = await checkAnswer(idx, j);
+            btns[j].classList.remove("pending");
             if (r.correct) {
               score++;
               fb.textContent = "Correct. You know them well.";
@@ -940,7 +948,10 @@
             );
           } catch (err) {
             picked = null;
-            btns.forEach((b) => (b.disabled = false));
+            btns.forEach((b) => {
+              b.disabled = false;
+              b.classList.remove("pending");
+            });
             fb.textContent = err.message;
           }
         }
