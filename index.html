@@ -324,6 +324,71 @@
         cursor: default;
       }
 
+      .bank {
+        border-top: 1px solid var(--rule);
+        padding-top: 16px;
+      }
+      .bank-toggle {
+        background: none;
+        border: none;
+        padding: 0 0 12px;
+        font-size: 12px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--muted);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .bank-toggle:hover {
+        color: var(--ink);
+      }
+      .bank-toggle::after {
+        content: "+";
+        font-size: 16px;
+        line-height: 1;
+        display: inline-block;
+        transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .bank.open .bank-toggle::after {
+        transform: rotate(45deg);
+      }
+      .bank-body {
+        display: grid;
+        grid-template-rows: 0fr;
+        transition: grid-template-rows 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .bank.open .bank-body {
+        grid-template-rows: 1fr;
+      }
+      .bank-inner {
+        min-height: 0;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+      }
+      .bank-inner button.text {
+        text-align: left;
+        font-size: 14px;
+        opacity: 0;
+        transform: translateY(-4px);
+        transition:
+          opacity 0.3s,
+          transform 0.3s;
+      }
+      .bank.open .bank-inner button.text {
+        opacity: 1;
+        transform: none;
+      }
+      .bank.open .bank-inner button.text:nth-child(2n) {
+        transition-delay: 40ms;
+      }
+      .bank.open .bank-inner button.text:nth-child(3n) {
+        transition-delay: 80ms;
+      }
+
       .row {
         display: flex;
         gap: 10px;
@@ -379,6 +444,27 @@
         font-weight: 600;
         line-height: 1;
         margin: 8px 0;
+      }
+      .attempt {
+        border-top: 1px solid var(--rule);
+        padding-top: 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .attempt-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 12px;
+      }
+      .missed {
+        margin: 4px 0 0;
+        padding-left: 18px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        font-size: 14px;
       }
     </style>
   </head>
@@ -453,6 +539,67 @@
         );
       }
 
+      const QUESTION_BANK = [
+        "What's my comfort food?",
+        "Where did we first meet?",
+        "What's my go-to song right now?",
+        "What's my most embarrassing guilty pleasure?",
+        "What's my dream vacation?",
+        "What's the first thing I do when I wake up?",
+        "What's my biggest pet peeve?",
+        "What would I order at a fancy restaurant?",
+        "What's my favorite movie?",
+        "What's my love language?",
+        "What's something I'm secretly afraid of?",
+        "What's my ideal weekend?",
+        "What was my first impression of you?",
+        "What's the best gift I've ever received?",
+        "What would I do with a free day?",
+      ];
+
+      let bankOpen = false;
+
+      function questionBank() {
+        const wrap = h("div", { class: "bank" + (bankOpen ? " open" : "") });
+        const toggle = h(
+          "button",
+          {
+            class: "bank-toggle",
+            type: "button",
+            "aria-expanded": String(bankOpen),
+            onclick: () => {
+              bankOpen = !bankOpen;
+              wrap.classList.toggle("open", bankOpen);
+              toggle.setAttribute("aria-expanded", String(bankOpen));
+              toggle.textContent = bankOpen
+                ? "Hide question ideas"
+                : "Show question ideas";
+            },
+          },
+          bankOpen ? "Hide question ideas" : "Show question ideas",
+        );
+        const list = h(
+          "div",
+          { class: "bank-inner" },
+          ...QUESTION_BANK.map((text) =>
+            h(
+              "button",
+              {
+                class: "text",
+                type: "button",
+                onclick: () => {
+                  draft.qs.push({ q: text, opts: ["", ""], ans: 0 });
+                  renderBuilder();
+                },
+              },
+              text,
+            ),
+          ),
+        );
+        wrap.append(toggle, h("div", { class: "bank-body" }, list));
+        return wrap;
+      }
+
       let draft = { name: "", qs: [{ q: "", opts: ["", ""], ans: 0 }] };
 
       function renderBuilder() {
@@ -495,6 +642,7 @@
               ),
               h("button", { class: "primary", onclick: makeLink }, "Get link"),
             ),
+            questionBank(),
             h("div", { id: "out" }),
           ),
         );
@@ -545,6 +693,22 @@
                 placeholder: "Answer " + (j + 1),
                 oninput: (e) => (qq.opts[j] = e.target.value),
               }),
+              qq.opts.length > 2
+                ? h(
+                    "button",
+                    {
+                      class: "text",
+                      title: "Remove answer",
+                      onclick: () => {
+                        qq.opts.splice(j, 1);
+                        if (qq.ans === j) qq.ans = 0;
+                        else if (qq.ans > j) qq.ans--;
+                        renderBuilder();
+                      },
+                    },
+                    "Remove",
+                  )
+                : null,
             ),
           ),
           h(
@@ -660,6 +824,19 @@
               ),
             ),
           );
+          const ownerLink = `${location.origin}/r/${data.id}#key=${data.key}`;
+          out.append(
+            h(
+              "p",
+              { class: "note" },
+              "Your private results page. Keep this link. It's the only way to see scores.",
+            ),
+            h("input", {
+              readonly: true,
+              value: ownerLink,
+              onclick: (e) => e.target.select(),
+            }),
+          );
         } catch (err) {
           out.replaceChildren(h("p", { class: "err" }, err.message));
         }
@@ -668,7 +845,9 @@
       let quiz = null,
         idx = 0,
         score = 0,
-        picked = null;
+        picked = null,
+        answers = [],
+        takerName = "";
 
       async function checkAnswer(qi, choice) {
         if (quiz.local) {
@@ -697,12 +876,24 @@
               `${quiz.qs.length} questions. No pressure.`,
             ),
             h(
+              "label",
+              { class: "field" },
+              "Your name (optional)",
+              h("input", {
+                type: "text",
+                value: takerName,
+                placeholder: "Your name",
+                oninput: (e) => (takerName = e.target.value),
+              }),
+            ),
+            h(
               "button",
               {
                 class: "primary",
                 onclick: () => {
                   idx = 0;
                   score = 0;
+                  answers = [];
                   renderQ();
                 },
               },
@@ -727,6 +918,7 @@
         async function pick(j) {
           if (picked !== null) return;
           picked = j;
+          answers[idx] = j;
           btns.forEach((b) => (b.disabled = true));
           try {
             const r = await checkAnswer(idx, j);
@@ -789,6 +981,11 @@
             : r >= 0.6
               ? "Pretty close. A few things to learn."
               : "Time for more conversations.";
+        const status = h(
+          "p",
+          { class: "note" },
+          quiz.id ? "Sending your score..." : "",
+        );
         app.replaceChildren(
           h(
             "div",
@@ -796,6 +993,7 @@
             h("p", { class: "label" }, "Results"),
             h("div", { class: "score" }, `${score} / ${total}`),
             h("p", { class: "sub" }, msg),
+            status,
             h(
               "button",
               {
@@ -803,6 +1001,7 @@
                 onclick: () => {
                   idx = 0;
                   score = 0;
+                  answers = [];
                   renderQ();
                 },
               },
@@ -815,6 +1014,24 @@
             ),
           ),
         );
+        if (quiz.id) {
+          fetch("/api/submit", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              id: quiz.id,
+              name: takerName.trim(),
+              answers,
+            }),
+          })
+            .then((res) => {
+              if (!res.ok) throw new Error();
+              status.textContent = "Your score was sent.";
+            })
+            .catch(() => {
+              status.textContent = "Could not send your score.";
+            });
+        }
       }
 
       function renderError() {
@@ -853,9 +1070,89 @@
         }
       }
 
+      async function loadResults(id) {
+        const key =
+          (location.hash.match(/key=([A-Za-z0-9_-]+)/) || [])[1] || "";
+        app.replaceChildren(
+          h(
+            "div",
+            { class: "card center" },
+            h("p", { class: "label" }, "Loading..."),
+          ),
+        );
+        let data;
+        try {
+          const res = await fetch(
+            `/api/results?id=${encodeURIComponent(id)}&key=${encodeURIComponent(key)}`,
+          );
+          data = await res.json();
+          if (!res.ok) throw new Error(data.error || "Could not load results.");
+        } catch (e) {
+          app.replaceChildren(
+            h(
+              "div",
+              { class: "card" },
+              h("p", { class: "label" }, "Results"),
+              h("h1", {}, "Can't open these results"),
+              h("p", { class: "sub" }, e.message),
+            ),
+          );
+          return;
+        }
+        renderResultsPage(data);
+      }
+
+      function renderResultsPage(data) {
+        const attempts = data.attempts;
+        const list = attempts.length
+          ? attempts.map((a) => {
+              const missed = a.missed.map((qi) => {
+                const q = data.qs[qi];
+                return h(
+                  "li",
+                  {},
+                  q.q,
+                  h("span", { class: "note" }, ` Answer: ${q.opts[q.ans]}`),
+                );
+              });
+              return h(
+                "div",
+                { class: "attempt" },
+                h(
+                  "div",
+                  { class: "attempt-head" },
+                  h("strong", {}, a.name || "Anonymous"),
+                  h("span", {}, `${a.score} / ${a.total}`),
+                ),
+                h("p", { class: "note" }, new Date(a.at).toLocaleString()),
+                missed.length
+                  ? h("ul", { class: "missed" }, ...missed)
+                  : h("p", { class: "note" }, "Got every question right."),
+              );
+            })
+          : [h("p", { class: "sub" }, "No one has taken it yet.")];
+
+        app.replaceChildren(
+          h(
+            "div",
+            { class: "card" },
+            h("p", { class: "label" }, "Your results"),
+            h("h1", {}, `${data.n}'s quiz`),
+            h(
+              "p",
+              { class: "sub" },
+              `${attempts.length} attempt${attempts.length === 1 ? "" : "s"} · ${data.qs.length} questions`,
+            ),
+            ...list,
+          ),
+        );
+      }
+
       function route() {
         const m = location.pathname.match(/^\/q\/([A-Za-z0-9_-]+)\/?$/);
         if (m) return loadRemote(m[1]);
+        const r = location.pathname.match(/^\/r\/([A-Za-z0-9_-]+)\/?$/);
+        if (r) return loadResults(r[1]);
 
         if (location.hash.startsWith("#q=")) {
           try {

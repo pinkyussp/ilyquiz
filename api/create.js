@@ -34,7 +34,9 @@ module.exports = async (req, res) => {
   }
 
   const id = crypto.randomBytes(5).toString("base64url");
-  await redis("SET", "quiz:" + id, JSON.stringify({ n: name, qs }));
+  const key = crypto.randomBytes(12).toString("base64url");
+  const keyHash = crypto.createHash("sha256").update(key).digest("hex");
+  await redis("SET", "quiz:" + id, JSON.stringify({ n: name, qs, keyHash }));
 
-  res.status(200).json({ id });
+  res.status(200).json({ id, key });
 };
