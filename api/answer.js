@@ -15,6 +15,9 @@ module.exports = async (req, res) => {
   const q = quiz.qs[Number(body.qi)];
   if (!q) return res.status(400).json({ error: "Question not found." });
 
+  // Open questions have no right answer, so nothing is checked.
+  if (q.open) return res.status(200).json({ open: true });
+
   res.status(200).json({
     correct: isCorrect(q, body.choice),
     answer: correctAnswer(q),
