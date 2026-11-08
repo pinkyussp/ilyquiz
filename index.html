@@ -956,7 +956,7 @@
             class: qq.t === "text" ? "on" : "",
             onclick: () => setType("text"),
           },
-          "Write your answer",
+          "Open question",
         );
         function setType(t) {
           if (qq.t === t) return;
@@ -1098,7 +1098,7 @@
           h(
             "p",
             { class: "note" },
-            "They'll type their answer in a box right here. Nothing is marked right or wrong.",
+            "Example: \"What's my favorite color?\" They'll type their answer in a box, and nothing is marked right or wrong.",
           ),
         );
       }
@@ -1433,7 +1433,13 @@
             }
           }
 
-          return h("div", { class: "textans" }, input, submitBtn);
+          return h(
+            "div",
+            { class: "textans" },
+            h("p", { class: "hint" }, "Type your answer. There's no wrong answer."),
+            input,
+            submitBtn,
+          );
         }
 
         app.replaceChildren(
@@ -1480,7 +1486,7 @@
             "div",
             { class: "card center enter" },
             h("p", { class: "label" }, "Results"),
-            h("div", { class: "score" }, total ? `${score} / ${total}` : "✓"),
+            total ? h("div", { class: "score" }, `${score} / ${total}`) : null,
             h("p", { class: "sub" }, msg),
             status,
             h(
@@ -1515,7 +1521,9 @@
           })
             .then((res) => {
               if (!res.ok) throw new Error();
-              status.textContent = "Your score was sent.";
+              status.textContent = total
+                ? "Your score was sent."
+                : "Your answer was sent.";
             })
             .catch(() => {
               status.textContent = "Could not send your score.";
@@ -1603,7 +1611,8 @@
           .map((q, qi) => ({ qi, q, n: missCounts[qi] }))
           .filter((x) => !x.q.open)
           .sort((a, b) => b.n - a.n);
-        const summary = attempts.length
+        const summary =
+          attempts.length && data.qs.some((q) => !q.open)
           ? h(
               "div",
               { class: "attempt" },
@@ -1645,7 +1654,11 @@
                   "div",
                   { class: "attempt-head" },
                   h("strong", {}, a.name || "Anonymous"),
-                  h("span", {}, `${a.score} / ${a.total}`),
+                  h(
+                    "span",
+                    {},
+                    a.total ? `${a.score} / ${a.total}` : "Answered",
+                  ),
                 ),
                 h("p", { class: "note" }, new Date(a.at).toLocaleString()),
                 missed.length
