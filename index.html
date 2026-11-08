@@ -1092,7 +1092,15 @@
 
       // Write-your-answer editor: the correct answer and any others that count.
       function textEditor(qq, refill) {
-        return h("div", { class: "qslot" }, textAnswerFields(qq, refill));
+        return h(
+          "div",
+          { class: "qslot" },
+          h(
+            "p",
+            { class: "note" },
+            "They'll type their answer in a box right here. Nothing is marked right or wrong.",
+          ),
+        );
       }
 
       async function makeLink() {
@@ -1101,7 +1109,7 @@
             const q = qq.q.trim();
             if (qq.t === "text") {
               const accepted = qq.accepted.map((s) => s.trim()).filter(Boolean);
-              return { t: "text", q, accepted: qq.open ? [] : accepted, open: !!qq.open };
+              return { t: "text", q, accepted: [], open: true };
             }
             const opts = qq.opts.map((o) => o.trim()).filter(Boolean);
             const correct = (qq.opts[qq.ans] || "").trim();
@@ -1110,9 +1118,7 @@
             return { t: "mc", q, opts, ans };
           })
           .filter((x) =>
-            x.t === "text"
-              ? x.q && (x.open || x.accepted.length >= 1)
-              : x.q && x.opts.length >= 2,
+            x.t === "text" ? x.q : x.q && x.opts.length >= 2,
           );
 
         const out = document.querySelector("#out");
@@ -1128,10 +1134,7 @@
           if (!qq.q.trim() && !filled.length) return;
           const n = i + 1;
           if (!qq.q.trim()) problems.push(`Question ${n} needs question text.`);
-          if (qq.t === "text") {
-            if (!qq.open && !filled.length)
-              problems.push(`Question ${n} needs a correct answer.`);
-          } else if (filled.length < 2) {
+          if (qq.t !== "text" && filled.length < 2) {
             problems.push(`Question ${n} needs at least two answers.`);
           }
         });
