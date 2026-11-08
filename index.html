@@ -29,7 +29,8 @@
         -webkit-tap-highlight-color: transparent;
       }
       button:focus:not(:focus-visible),
-      input:focus:not(:focus-visible) {
+      input:focus:not(:focus-visible),
+      a:focus:not(:focus-visible) {
         outline: none;
       }
       html,
@@ -56,6 +57,7 @@
         margin: 0 auto;
       }
 
+      /* Top bar and menu */
       .topbar {
         position: fixed;
         top: 0;
@@ -116,7 +118,6 @@
         outline: 2px solid var(--accent);
         outline-offset: 2px;
       }
-
       .menu {
         position: fixed;
         inset: 0;
@@ -168,6 +169,7 @@
         color: var(--accent);
       }
 
+      /* Layout pieces */
       .card {
         background: var(--card);
         border: 1px solid var(--rule);
@@ -181,7 +183,6 @@
         text-align: center;
         align-items: center;
       }
-
       .label {
         margin: 0;
         font-size: 12px;
@@ -212,6 +213,11 @@
         font-size: 13px;
         color: var(--muted);
       }
+      .hint {
+        margin: 0;
+        font-size: 13px;
+        color: var(--muted);
+      }
       .feedback {
         margin: 0;
         min-height: 1.5em;
@@ -222,7 +228,29 @@
         margin: 0;
         color: var(--no);
       }
+      .row {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .row > button {
+        flex: 1;
+      }
+      .stack {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      #out {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      #out:empty {
+        display: none;
+      }
 
+      /* Inputs */
       label.field {
         display: flex;
         flex-direction: column;
@@ -230,7 +258,6 @@
         font-size: 14px;
         color: var(--muted);
       }
-
       input[type="text"],
       input[readonly] {
         width: 100%;
@@ -251,7 +278,46 @@
         color: var(--muted);
         font-size: 13px;
       }
+      input.answerbox {
+        width: 100%;
+        font: inherit;
+        font-size: 16px;
+        color: var(--ink);
+        background: #fff;
+        border: 1px solid var(--rule);
+        border-radius: 4px;
+        padding: 12px 14px;
+        outline: none;
+        transition:
+          border-color 0.25s,
+          background 0.35s,
+          color 0.35s;
+      }
+      input.answerbox:focus {
+        border-color: var(--accent);
+      }
+      input.answerbox.right {
+        background: var(--ok-bg);
+        border-color: var(--ok);
+        color: var(--ok);
+        animation: glow 0.7s ease-out;
+      }
+      input.answerbox.wrong {
+        background: var(--no-bg);
+        border-color: var(--no);
+        color: var(--no);
+        animation: shake 0.45s ease;
+      }
+      input.answerbox.nudge {
+        animation: shake 0.45s ease;
+      }
+      .textans {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
 
+      /* Builder */
       .question {
         border-top: 1px solid var(--rule);
         padding-top: 16px;
@@ -285,93 +351,6 @@
         margin: 0;
         flex: none;
       }
-
-      /* Question type switch (Multiple choice / Write your answer) */
-      .typebar {
-        position: relative;
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        background: #fff;
-        border: 1px solid var(--rule);
-        border-radius: 4px;
-        padding: 3px;
-      }
-      .typebar .pill {
-        position: absolute;
-        top: 3px;
-        bottom: 3px;
-        left: 3px;
-        width: calc(50% - 3px);
-        background: var(--accent-soft);
-        border-radius: 3px;
-        transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
-        pointer-events: none;
-      }
-      .typebar.is-text .pill {
-        transform: translateX(100%);
-      }
-      .typebar button {
-        position: relative;
-        z-index: 1;
-        background: none;
-        border: none;
-        padding: 8px 6px;
-        font-size: 14px;
-        color: var(--muted);
-        transition: color 0.25s;
-      }
-      .typebar button.on {
-        color: var(--ink);
-      }
-
-      button {
-        font: inherit;
-        font-size: 15px;
-        cursor: pointer;
-        border-radius: 4px;
-        padding: 11px 18px;
-        transition:
-          background 0.15s,
-          color 0.15s,
-          border-color 0.15s,
-          transform 0.15s;
-      }
-      button.primary {
-        background: var(--accent);
-        color: #fff;
-        border: 1px solid var(--accent);
-      }
-      button.primary:hover {
-        background: #d78a93;
-        border-color: #d78a93;
-      }
-      button.primary:active {
-        transform: scale(0.97);
-      }
-      button.ghost {
-        background: transparent;
-        color: var(--ink);
-        border: 1px solid var(--rule);
-      }
-      button.ghost:hover {
-        border-color: var(--ink);
-      }
-      button.text {
-        background: none;
-        border: none;
-        padding: 0;
-        font-size: 13px;
-        color: var(--muted);
-        text-decoration: underline;
-        text-underline-offset: 3px;
-      }
-      button.text:hover {
-        color: var(--ink);
-      }
-      button:disabled {
-        cursor: default;
-      }
-
       .bank {
         border-top: 1px solid var(--rule);
         padding-top: 16px;
@@ -430,33 +409,92 @@
         opacity: 1;
         transform: none;
       }
-      .bank.open .bank-inner button.text:nth-child(2n) {
-        transition-delay: 40ms;
-      }
-      .bank.open .bank-inner button.text:nth-child(3n) {
-        transition-delay: 80ms;
-      }
 
-      .row {
-        display: flex;
-        gap: 10px;
-        flex-wrap: wrap;
-      }
-      .row > button {
-        flex: 1;
-      }
-      .stack {
+      /* Home choices */
+      .choice {
         display: flex;
         flex-direction: column;
-        gap: 10px;
+        gap: 4px;
+        padding: 18px 20px;
+        background: #fff;
+        border: 1px solid var(--rule);
+        border-radius: 6px;
+        color: var(--ink);
+        text-decoration: none;
+        text-align: left;
+        transition: border-color 0.2s;
       }
-      .hint {
-        margin: 0;
-        font-size: 13px;
-        color: var(--muted);
+      .choice:hover {
+        border-color: var(--accent);
+      }
+      .choice strong {
+        font-family: "Fraunces", Georgia, serif;
+        font-size: 20px;
+        font-weight: 600;
       }
 
-      /* Multiple choice answers */
+      /* Buttons */
+      button {
+        font: inherit;
+        font-size: 15px;
+        cursor: pointer;
+        border-radius: 4px;
+        padding: 11px 18px;
+        transition:
+          background 0.15s,
+          color 0.15s,
+          border-color 0.15s,
+          transform 0.15s;
+      }
+      button.primary {
+        background: var(--accent);
+        color: #fff;
+        border: 1px solid var(--accent);
+      }
+      button.primary:hover {
+        background: #d78a93;
+        border-color: #d78a93;
+      }
+      button.primary:active {
+        transform: scale(0.97);
+      }
+      button.ghost {
+        background: transparent;
+        color: var(--ink);
+        border: 1px solid var(--rule);
+      }
+      button.ghost:hover {
+        border-color: var(--ink);
+      }
+      button.text {
+        background: none;
+        border: none;
+        padding: 0;
+        font-size: 13px;
+        color: var(--muted);
+        text-decoration: underline;
+        text-underline-offset: 3px;
+      }
+      button.text:hover {
+        color: var(--ink);
+      }
+      button:disabled {
+        cursor: default;
+      }
+      a.ghost-link {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        color: var(--ink);
+        border: 1px solid var(--rule);
+        border-radius: 4px;
+        padding: 11px 18px;
+        font-size: 15px;
+        flex: 1;
+      }
+
+      /* Answers (taker view) */
       .answer {
         position: relative;
         display: block;
@@ -518,57 +556,7 @@
         color: var(--muted);
       }
 
-      /* Write your answer */
-      .textans {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-      }
-      input.answerbox {
-        width: 100%;
-        font: inherit;
-        font-size: 16px;
-        color: var(--ink);
-        background: #fff;
-        border: 1px solid var(--rule);
-        border-radius: 4px;
-        padding: 12px 14px;
-        outline: none;
-        transition:
-          border-color 0.25s,
-          background 0.35s,
-          color 0.35s;
-      }
-      input.answerbox:focus {
-        border-color: var(--accent);
-      }
-      input.answerbox:disabled {
-        opacity: 1;
-      }
-      input.answerbox.right {
-        background: var(--ok-bg);
-        border-color: var(--ok);
-        color: var(--ok);
-        animation: glow 0.7s ease-out;
-      }
-      input.answerbox.wrong {
-        background: var(--no-bg);
-        border-color: var(--no);
-        color: var(--no);
-        animation: shake 0.45s ease;
-      }
-      input.answerbox.nudge {
-        animation: shake 0.45s ease;
-      }
-
-      #out {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-      }
-      #out:empty {
-        display: none;
-      }
+      /* Results */
       .score {
         font-family: "Fraunces", Georgia, serif;
         font-size: 56px;
@@ -688,8 +676,9 @@
 
     <div class="menu" id="menu" aria-hidden="true">
       <nav>
-        <a href="/" style="--i: 0">Make a quiz</a>
-        <a href="/socials/" style="--i: 1">Socials</a>
+        <a href="/make" style="--i: 0">Make a quiz</a>
+        <a href="/ask" style="--i: 1">Ask a question</a>
+        <a href="/socials/" style="--i: 2">Socials</a>
       </nav>
     </div>
 
@@ -719,6 +708,7 @@
 
       const app = document.querySelector("#app");
 
+      // Small helper for building elements.
       function h(tag, attrs = {}, ...kids) {
         const el = document.createElement(tag);
         for (const [k, v] of Object.entries(attrs)) {
@@ -734,37 +724,81 @@
         return el;
       }
 
-      function dec(str) {
-        let s = str.replace(/-/g, "+").replace(/_/g, "/");
-        while (s.length % 4) s += "=";
-        const bin = atob(s);
-        return new TextDecoder().decode(
-          Uint8Array.from(bin, (c) => c.charCodeAt(0)),
+      function shake(el) {
+        el.classList.remove("nudge");
+        void el.offsetWidth;
+        el.classList.add("nudge");
+      }
+
+      function copyButton(text, label = "Copy link") {
+        const input = h("input", {
+          readonly: true,
+          value: text,
+          onclick: (e) => e.target.select(),
+        });
+        const btn = h(
+          "button",
+          {
+            class: "primary",
+            type: "button",
+            onclick: () => {
+              const done = () => (btn.textContent = "Copied");
+              if (navigator.clipboard)
+                navigator.clipboard
+                  .writeText(text)
+                  .then(done)
+                  .catch(() => {
+                    input.select();
+                    document.execCommand("copy");
+                    done();
+                  });
+              else {
+                input.select();
+                document.execCommand("copy");
+                done();
+              }
+            },
+          },
+          label,
+        );
+        return { input, btn };
+      }
+
+      /* ---------- Home ---------- */
+
+      function renderHome() {
+        app.replaceChildren(
+          h(
+            "div",
+            { class: "card enter" },
+            h("p", { class: "label" }, "Quiz"),
+            h("h1", {}, "How well do you know me?"),
+            h("p", { class: "sub" }, "What would you like to make?"),
+            h(
+              "a",
+              { class: "choice", href: "/make" },
+              h("strong", {}, "Make a quiz"),
+              h(
+                "span",
+                { class: "note" },
+                "Multiple choice questions with right answers. You get a score.",
+              ),
+            ),
+            h(
+              "a",
+              { class: "choice", href: "/ask" },
+              h("strong", {}, "Ask a question"),
+              h(
+                "span",
+                { class: "note" },
+                "Questions with no right or wrong answers. You read what they type.",
+              ),
+            ),
+          ),
         );
       }
 
-      // Same rules as lib/grade.js on the server. Used only for links that
-      // carry the quiz in the URL (#q=...).
-      function norm(s) {
-        return String(s == null ? "" : s)
-          .normalize("NFKD")
-          .replace(/[̀-ͯ]/g, "")
-          .toLowerCase()
-          .replace(/[^\p{L}\p{N}\s]/gu, "")
-          .replace(/\s+/g, " ")
-          .trim();
-      }
-      function isCorrectLocal(q, choice) {
-        if (q.t === "text") {
-          const typed = norm(choice);
-          return typed !== "" && (q.accepted || []).some((a) => norm(a) === typed);
-        }
-        return Number(choice) === q.ans;
-      }
-      function correctAnswerLocal(q) {
-        if (q.t === "text") return (q.accepted || [])[0] || "";
-        return q.ans;
-      }
+      /* ---------- Builder (shared by both types) ---------- */
 
       const QUESTION_BANK = [
         "What's my comfort food?",
@@ -815,7 +849,7 @@
                 class: "text",
                 type: "button",
                 onclick: () => {
-                  draft.qs.push(newQuestion("mc", text));
+                  draft.qs.push(newQuestion(draft.mode, text));
                   renderBuilder();
                 },
               },
@@ -827,83 +861,94 @@
         return wrap;
       }
 
-      function newQuestion(t = "mc", q = "") {
-        return {
-          t,
-          q,
-          opts: ["", ""],
-          ans: 0,
-          accepted: [""],
-        };
+      // The draft is the quiz being written. mode is "quiz" or "ask".
+      let draft = null;
+
+      function newQuestion(mode, q = "") {
+        return mode === "ask" ? { q } : { q, opts: ["", ""], ans: 0 };
       }
 
-      let draft = { name: "", email: "", qs: [newQuestion()] };
+      function startDraft(mode) {
+        if (!draft || draft.mode !== mode) {
+          draft = { mode, name: "", email: "", qs: [newQuestion(mode)] };
+        }
+      }
 
       function renderBuilder() {
-        app.replaceChildren(
+        const isQuiz = draft.mode === "quiz";
+        const children = [
+          h("p", { class: "label" }, isQuiz ? "Make a quiz" : "Ask a question"),
+          h(
+            "h1",
+            {},
+            isQuiz ? "How well do they know you?" : "What do you want to ask?",
+          ),
+          h(
+            "p",
+            { class: "sub" },
+            isQuiz
+              ? "Write questions about yourself and mark the right answer for each. You'll see their score."
+              : "Write your question. They type their own answer, and you read it on your results page. Nothing is scored.",
+          ),
+          h(
+            "label",
+            { class: "field" },
+            "Your name",
+            h("input", {
+              type: "text",
+              value: draft.name,
+              placeholder: "Your name",
+              oninput: (e) => (draft.name = e.target.value),
+            }),
+          ),
+          h(
+            "label",
+            { class: "field" },
+            "Your email (optional, for updates when someone finishes)",
+            h("input", {
+              type: "text",
+              value: draft.email,
+              placeholder: "you@example.com",
+              oninput: (e) => (draft.email = e.target.value),
+            }),
+          ),
+          ...draft.qs.map((qq, i) => questionEditor(qq, i)),
           h(
             "div",
-            { class: "card" },
-            h("p", { class: "label" }, "Make a quiz"),
-            h("h1", {}, "How well do they know you?"),
+            { class: "row" },
             h(
-              "p",
-              { class: "sub" },
-              "Write a few questions about yourself, then send them the link. Pick multiple choice, or let them write the answer.",
-            ),
-            h(
-              "label",
-              { class: "field" },
-              "Your name",
-              h("input", {
-                type: "text",
-                value: draft.name,
-                placeholder: "Your name",
-                oninput: (e) => (draft.name = e.target.value),
-              }),
-            ),
-            h(
-              "label",
-              { class: "field" },
-              "Your email (optional, for updates when someone finishes)",
-              h("input", {
-                type: "text",
-                value: draft.email,
-                placeholder: "you@example.com",
-                oninput: (e) => (draft.email = e.target.value),
-              }),
-            ),
-            ...draft.qs.map((qq, i) => questionEditor(qq, i)),
-            h(
-              "div",
-              { class: "row" },
-              h(
-                "button",
-                {
-                  class: "ghost",
-                  onclick: () => {
-                    draft.qs.push(newQuestion());
-                    renderBuilder();
-                  },
+              "button",
+              {
+                class: "ghost",
+                type: "button",
+                onclick: () => {
+                  draft.qs.push(newQuestion(draft.mode));
+                  renderBuilder();
                 },
-                "Add question",
-              ),
-              h("button", { class: "primary", onclick: makeLink }, "Get link"),
+              },
+              "Add question",
             ),
-            questionBank(),
-            h("div", { id: "out" }),
+            h(
+              "button",
+              { class: "primary", type: "button", onclick: makeLink },
+              "Get link",
+            ),
+          ),
+        ];
+        if (isQuiz) children.push(questionBank());
+        children.push(
+          h(
+            "button",
+            { class: "text", type: "button", onclick: () => (location.href = "/") },
+            "Back to start",
           ),
         );
+        children.push(h("div", { id: "out" }));
+        app.replaceChildren(h("div", { class: "card enter" }, ...children));
       }
 
       function questionEditor(qq, i) {
-        const slot = h("div", { class: "qslot" });
-        const refill = () =>
-          slot.replaceChildren(
-            qq.t === "text" ? textEditor(qq, refill) : mcEditor(qq, i),
-          );
-        refill();
-
+        const isQuiz = draft.mode === "quiz";
         return h(
           "div",
           { class: "question" },
@@ -916,6 +961,7 @@
                   "button",
                   {
                     class: "text",
+                    type: "button",
                     onclick: () => {
                       draft.qs.splice(i, 1);
                       renderBuilder();
@@ -925,49 +971,20 @@
                 )
               : null,
           ),
-          typeSwitch(qq, refill),
           h("input", {
             type: "text",
             value: qq.q,
-            placeholder: "Question",
+            placeholder: isQuiz ? "Question" : "Your question",
             oninput: (e) => (qq.q = e.target.value),
           }),
-          slot,
+          isQuiz
+            ? mcEditor(qq, i)
+            : h(
+                "p",
+                { class: "hint" },
+                "They'll type their answer in a box. Nothing is marked right or wrong.",
+              ),
         );
-      }
-
-      // Sliding switch between the two question types. Updates in place so
-      // the pill can animate instead of the whole card re-rendering.
-      function typeSwitch(qq, refill) {
-        const bar = h("div", { class: "typebar" + (qq.t === "text" ? " is-text" : "") });
-        const mcBtn = h(
-          "button",
-          {
-            type: "button",
-            class: qq.t === "text" ? "" : "on",
-            onclick: () => setType("mc"),
-          },
-          "Multiple choice",
-        );
-        const textBtn = h(
-          "button",
-          {
-            type: "button",
-            class: qq.t === "text" ? "on" : "",
-            onclick: () => setType("text"),
-          },
-          "Open question",
-        );
-        function setType(t) {
-          if (qq.t === t) return;
-          qq.t = t;
-          bar.classList.toggle("is-text", t === "text");
-          mcBtn.classList.toggle("on", t === "mc");
-          textBtn.classList.toggle("on", t === "text");
-          refill();
-        }
-        bar.append(h("span", { class: "pill" }), mcBtn, textBtn);
-        return bar;
       }
 
       function mcEditor(qq, i) {
@@ -982,7 +999,7 @@
                 type: "radio",
                 name: "ans" + i,
                 checked: qq.ans === j,
-                title: "Correct answer",
+                title: "Right answer",
                 onchange: () => (qq.ans = j),
               }),
               h("input", {
@@ -996,6 +1013,7 @@
                     "button",
                     {
                       class: "text",
+                      type: "button",
                       title: "Remove answer",
                       onclick: () => {
                         qq.opts.splice(j, 1);
@@ -1017,6 +1035,7 @@
                   "button",
                   {
                     class: "text",
+                    type: "button",
                     onclick: () => {
                       qq.opts.push("");
                       renderBuilder();
@@ -1028,125 +1047,57 @@
             h(
               "span",
               { class: "note" },
-              "Select the circle next to the correct answer.",
+              "Select the circle next to the right answer.",
             ),
-          ),
-        );
-      }
-
-      function textAnswerFields(qq, refill) {
-        return h(
-          "div",
-          { class: "qslot" },
-          ...qq.accepted.map((a, j) =>
-            h(
-              "div",
-              { class: "opt" },
-              h("input", {
-                type: "text",
-                value: a,
-                placeholder:
-                  j === 0 ? "Answer" : "Also correct (optional)",
-                oninput: (e) => (qq.accepted[j] = e.target.value),
-              }),
-              j > 0
-                ? h(
-                    "button",
-                    {
-                      class: "text",
-                      title: "Remove answer",
-                      onclick: () => {
-                        qq.accepted.splice(j, 1);
-                        refill();
-                      },
-                    },
-                    "Remove",
-                  )
-                : null,
-            ),
-          ),
-          h(
-            "div",
-            { class: "row" },
-            qq.accepted.length < 6
-              ? h(
-                  "button",
-                  {
-                    class: "text",
-                    onclick: () => {
-                      qq.accepted.push("");
-                      refill();
-                    },
-                  },
-                  "Add another answer",
-                )
-              : null,
-            h(
-              "span",
-              { class: "note" },
-              "Capitals, spaces and punctuation don't matter.",
-            ),
-          ),
-        );
-      }
-
-      // Write-your-answer editor: the correct answer and any others that count.
-      function textEditor(qq, refill) {
-        return h(
-          "div",
-          { class: "qslot" },
-          h(
-            "p",
-            { class: "note" },
-            "Example: \"What's my favorite color?\" They'll type their answer in a box, and nothing is marked right or wrong.",
           ),
         );
       }
 
       async function makeLink() {
-        const qs = draft.qs
-          .map((qq) => {
-            const q = qq.q.trim();
-            if (qq.t === "text") {
-              const accepted = qq.accepted.map((s) => s.trim()).filter(Boolean);
-              return { t: "text", q, accepted: [], open: true };
-            }
-            const opts = qq.opts.map((o) => o.trim()).filter(Boolean);
-            const correct = (qq.opts[qq.ans] || "").trim();
-            let ans = opts.indexOf(correct);
-            if (ans < 0) ans = 0;
-            return { t: "mc", q, opts, ans };
-          })
-          .filter((x) =>
-            x.t === "text" ? x.q : x.q && x.opts.length >= 2,
-          );
-
+        const isQuiz = draft.mode === "quiz";
         const out = document.querySelector("#out");
-
-        // Say exactly what is missing. Completely empty question slots are ignored.
         const problems = [];
+        const qs = [];
+
         if (!draft.name.trim()) problems.push("Add your name.");
+
         draft.qs.forEach((qq, i) => {
-          const filled =
-            qq.t === "text"
-              ? qq.accepted.filter((s) => s.trim())
-              : qq.opts.filter((o) => o.trim());
-          if (!qq.q.trim() && !filled.length) return;
           const n = i + 1;
-          if (!qq.q.trim()) problems.push(`Question ${n} needs question text.`);
-          if (qq.t !== "text" && filled.length < 2) {
-            problems.push(`Question ${n} needs at least two answers.`);
+          const q = qq.q.trim();
+
+          if (!isQuiz) {
+            // Empty question boxes are ignored.
+            if (q) qs.push({ t: "text", q, open: true, accepted: [] });
+            return;
           }
+
+          const anyOption = qq.opts.some((o) => o.trim());
+          if (!q && !anyOption) return; // empty slot, ignored
+          if (!q) {
+            problems.push(`Question ${n} needs question text.`);
+            return;
+          }
+          const opts = qq.opts.map((o) => o.trim()).filter(Boolean);
+          if (opts.length < 2) {
+            problems.push(`Question ${n} needs at least two answers.`);
+            return;
+          }
+          const ans = opts.indexOf((qq.opts[qq.ans] || "").trim());
+          if (ans < 0) {
+            problems.push(`Question ${n}: select the circle next to the right answer.`);
+            return;
+          }
+          qs.push({ t: "mc", q, opts, ans });
         });
 
-        if (problems.length || !qs.length) {
-          out.replaceChildren(
-            h(
-              "p",
-              { class: "err" },
-              problems.join(" ") || "Add at least one complete question.",
-            ),
+        if (!qs.length && !problems.length) {
+          problems.push(
+            isQuiz ? "Add at least one question." : "Write at least one question.",
           );
+        }
+
+        if (problems.length) {
+          out.replaceChildren(h("p", { class: "err" }, problems.join(" ")));
           return;
         }
 
@@ -1163,68 +1114,33 @@
           });
           const data = await res.json();
           if (!res.ok)
-            throw new Error(data.error || "Could not create the quiz.");
+            throw new Error(data.error || "Could not create it. Try again.");
 
           const link = `${location.origin}/q/${data.id}`;
-          const input = h("input", {
-            readonly: true,
-            value: link,
-            onclick: (e) => e.target.select(),
-          });
-          const copyBtn = h(
-            "button",
-            {
-              class: "primary",
-              onclick: () => {
-                const done = () => (copyBtn.textContent = "Copied");
-                if (navigator.clipboard)
-                  navigator.clipboard
-                    .writeText(link)
-                    .then(done)
-                    .catch(() => {
-                      input.select();
-                      document.execCommand("copy");
-                      done();
-                    });
-                else {
-                  input.select();
-                  document.execCommand("copy");
-                  done();
-                }
-              },
-            },
-            "Copy link",
-          );
-
+          const share = copyButton(link);
           out.replaceChildren(
             h(
               "p",
               { class: "note" },
-              "Send this to them. It works on any device.",
+              isQuiz
+                ? "Send this to them. It works on any device."
+                : "Send this to them. You'll find their answers on your results page.",
             ),
-            input,
+            share.input,
             h(
               "div",
               { class: "row" },
-              copyBtn,
-              h(
-                "a",
-                {
-                  class: "ghost",
-                  href: `/q/${data.id}`,
-                  style:
-                    "display:flex;align-items:center;justify-content:center;text-decoration:none;color:var(--ink);border:1px solid var(--rule);border-radius:4px;padding:11px 18px;font-size:15px;flex:1",
-                },
-                "Open",
-              ),
+              share.btn,
+              h("a", { class: "ghost-link", href: `/q/${data.id}` }, "Open"),
             ),
           );
+
           const ownerLink = `${location.origin}/r/${data.id}#key=${data.key}`;
           out.append(
             h(
               "p",
               { class: "note" },
-              "Your private results page. Keep this link. It's the only way to see scores.",
+              "Your private results page. Keep this link. It's the only way to see answers and scores.",
             ),
             h("input", {
               readonly: true,
@@ -1237,23 +1153,20 @@
         }
       }
 
+      /* ---------- Taking a quiz ---------- */
+
       let quiz = null,
         idx = 0,
         score = 0,
         answers = [],
         takerName = "";
 
-      // Returns { correct, answer }. For multiple choice, answer is the
-      // correct option index. For write-your-answer, it is the correct text.
+      // A quiz where every question is open has no score.
+      function isAskQuiz(q) {
+        return q.qs.length > 0 && q.qs.every((x) => x.open);
+      }
+
       async function checkAnswer(qi, choice) {
-        if (quiz.local) {
-          const q = quiz.qs[qi];
-          if (q.open) return { open: true };
-          return {
-            correct: isCorrectLocal(q, choice),
-            answer: correctAnswerLocal(q),
-          };
-        }
         const res = await fetch("/api/answer", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -1264,16 +1177,24 @@
       }
 
       function renderIntro() {
+        const ask = isAskQuiz(quiz);
+        const count = quiz.qs.length;
         app.replaceChildren(
           h(
             "div",
             { class: "card center enter" },
-            h("p", { class: "label" }, "A quiz for you"),
-            h("h1", {}, `${quiz.n} made you a quiz`),
+            h("p", { class: "label" }, ask ? "A question for you" : "A quiz for you"),
+            h(
+              "h1",
+              {},
+              ask ? `${quiz.n} has a question for you` : `${quiz.n} made you a quiz`,
+            ),
             h(
               "p",
               { class: "sub" },
-              `${quiz.qs.length} questions. No pressure.`,
+              ask
+                ? `${count} ${count === 1 ? "question" : "questions"}. There's no wrong answer.`
+                : `${count} ${count === 1 ? "question" : "questions"}. No pressure.`,
             ),
             h(
               "label",
@@ -1290,6 +1211,7 @@
               "button",
               {
                 class: "primary",
+                type: "button",
                 onclick: () => {
                   idx = 0;
                   score = 0;
@@ -1301,161 +1223,152 @@
             ),
             h(
               "button",
-              { class: "text", onclick: () => (location.href = "/") },
-              "Make your own quiz",
+              { class: "text", type: "button", onclick: () => (location.href = "/") },
+              "Back to start",
             ),
           ),
         );
       }
 
-      function shake(el) {
-        el.classList.remove("nudge");
-        void el.offsetWidth;
-        el.classList.add("nudge");
+      function showNext(nextSlot) {
+        nextSlot.append(
+          h(
+            "button",
+            { class: "primary enter", type: "button", onclick: next },
+            idx + 1 < quiz.qs.length ? "Next" : "See results",
+          ),
+        );
       }
 
       function renderQ() {
         const qq = quiz.qs[idx];
         const fb = h("p", { class: "feedback" });
         const nextSlot = h("div", {});
-
-        function showNext() {
-          nextSlot.append(
-            h(
-              "button",
-              { class: "primary enter", onclick: next },
-              idx + 1 < quiz.qs.length ? "Next" : "See results",
-            ),
-          );
-        }
-
-        function finish(r, typed) {
-          if (r.correct) {
-            score++;
-            fb.textContent = "Correct. You know them well.";
-          } else {
-            fb.textContent =
-              qq.t === "text"
-                ? `Not quite. It was "${r.answer}". It's fine.`
-                : "Not quite. It's fine.";
-          }
-          fb.classList.add("fade-in");
-          showNext();
-        }
-
-        // Multiple choice
-        function mcBody() {
-          let picked = null;
-          let btns = [];
-
-          async function pick(j) {
-            if (picked !== null) return;
-            picked = j;
-            answers[idx] = j;
-            btns.forEach((b) => (b.disabled = true));
-            btns[j].classList.add("pending", "picked");
-            fb.textContent = "Checking...";
-            try {
-              const r = await checkAnswer(idx, j);
-              btns[j].classList.remove("pending");
-              if (r.correct) {
-                btns[j].classList.add("right");
-              } else {
-                btns[j].classList.add("wrong");
-                btns[r.answer].classList.add("right");
-              }
-              finish(r);
-            } catch (err) {
-              picked = null;
-              btns.forEach((b) => {
-                b.disabled = false;
-                b.classList.remove("pending", "picked");
-              });
-              fb.textContent = err.message;
-            }
-          }
-
-          btns = qq.opts.map((o, j) => {
-            const b = h("button", { class: "answer", onclick: () => pick(j) }, o);
-            b.style.setProperty("--d", j);
-            return b;
-          });
-          return h("div", { class: "stack" }, ...btns);
-        }
-
-        // Write your answer
-        function textBody() {
-          let done = false;
-          const input = h("input", {
-            type: "text",
-            class: "answerbox",
-            placeholder: "Type your answer",
-            autocomplete: "off",
-            onkeydown: (e) => {
-              if (e.key === "Enter") submit();
-            },
-          });
-          const submitBtn = h(
-            "button",
-            { class: "primary", onclick: submit },
-            "Check",
-          );
-
-          async function submit() {
-            if (done) return;
-            const typed = input.value.trim();
-            if (!typed) {
-              fb.textContent = "Type something first.";
-              shake(input);
-              return;
-            }
-            done = true;
-            input.disabled = true;
-            submitBtn.disabled = true;
-            fb.textContent = "Checking...";
-            try {
-              const r = await checkAnswer(idx, typed);
-              answers[idx] = typed;
-              submitBtn.remove();
-              if (r.open) {
-                fb.textContent = "Saved. Thanks for answering!";
-                fb.classList.add("fade-in");
-                showNext();
-              } else {
-                input.classList.add(r.correct ? "right" : "wrong");
-                finish(r);
-              }
-            } catch (err) {
-              done = false;
-              input.disabled = false;
-              submitBtn.disabled = false;
-              fb.textContent = err.message;
-            }
-          }
-
-          return h(
-            "div",
-            { class: "textans" },
-            h("p", { class: "hint" }, "Type your answer. There's no wrong answer."),
-            input,
-            submitBtn,
-          );
-        }
-
+        const body = qq.t === "text" ? textBody(qq, fb, nextSlot) : mcBody(qq, fb, nextSlot);
         app.replaceChildren(
           h(
             "div",
             { class: "card enter" },
-            h(
-              "p",
-              { class: "label" },
-              `Question ${idx + 1} of ${quiz.qs.length}`,
-            ),
+            h("p", { class: "label" }, `Question ${idx + 1} of ${quiz.qs.length}`),
             h("h2", {}, qq.q),
-            qq.t === "text" ? textBody() : mcBody(),
+            body,
             fb,
             nextSlot,
           ),
+        );
+      }
+
+      // Multiple choice: marked right or wrong, and scored.
+      function mcBody(qq, fb, nextSlot) {
+        let picked = null;
+        let btns = [];
+
+        async function pick(j) {
+          if (picked !== null) return;
+          picked = j;
+          answers[idx] = j;
+          btns.forEach((b) => (b.disabled = true));
+          btns[j].classList.add("pending", "picked");
+          fb.textContent = "Checking...";
+          try {
+            const r = await checkAnswer(idx, j);
+            btns[j].classList.remove("pending");
+            if (r.correct) {
+              score++;
+              btns[j].classList.add("right");
+              fb.textContent = "Correct. You know them well.";
+            } else {
+              btns[j].classList.add("wrong");
+              btns[r.answer].classList.add("right");
+              fb.textContent = "Not quite. It's fine.";
+            }
+            fb.classList.add("fade-in");
+            showNext(nextSlot);
+          } catch (err) {
+            picked = null;
+            btns.forEach((b) => {
+              b.disabled = false;
+              b.classList.remove("pending", "picked");
+            });
+            fb.textContent = err.message;
+          }
+        }
+
+        btns = qq.opts.map((o, j) => {
+          const b = h("button", { class: "answer", type: "button", onclick: () => pick(j) }, o);
+          b.style.setProperty("--d", j);
+          return b;
+        });
+        return h("div", { class: "stack" }, ...btns);
+      }
+
+      // Write-your-answer: open questions are saved and never marked.
+      // A text question with a right answer is still marked, for old quizzes.
+      function textBody(qq, fb, nextSlot) {
+        let done = false;
+        const isOpen = qq.open === true;
+
+        const input = h("input", {
+          type: "text",
+          class: "answerbox",
+          placeholder: "Type your answer",
+          autocomplete: "off",
+          onkeydown: (e) => {
+            if (e.key === "Enter") submit();
+          },
+        });
+        const submitBtn = h(
+          "button",
+          { class: "primary", type: "button", onclick: submit },
+          isOpen ? "Save my answer" : "Check",
+        );
+
+        async function submit() {
+          if (done) return;
+          const typed = input.value.trim();
+          if (!typed) {
+            fb.textContent = "Type something first.";
+            shake(input);
+            return;
+          }
+          done = true;
+          input.disabled = true;
+          submitBtn.disabled = true;
+          fb.textContent = "Saving...";
+          try {
+            const r = await checkAnswer(idx, typed);
+            answers[idx] = typed;
+            submitBtn.remove();
+            if (r.open) {
+              fb.textContent = "Saved. Thanks for answering!";
+            } else if (r.correct) {
+              input.classList.add("right");
+              score++;
+              fb.textContent = "Correct. You know them well.";
+            } else {
+              input.classList.add("wrong");
+              fb.textContent = `Not quite. It was "${r.answer}". It's fine.`;
+            }
+            fb.classList.add("fade-in");
+            showNext(nextSlot);
+          } catch (err) {
+            done = false;
+            input.disabled = false;
+            submitBtn.disabled = false;
+            fb.textContent = err.message;
+          }
+        }
+
+        return h(
+          "div",
+          { class: "textans" },
+          h(
+            "p",
+            { class: "hint" },
+            isOpen ? "Type your answer. There's no wrong answer." : "Type your answer.",
+          ),
+          input,
+          submitBtn,
         );
       }
 
@@ -1466,49 +1379,51 @@
       }
 
       function renderResults() {
-        const total = quiz.qs.filter((q) => !q.open).length;
-        const r = total ? score / total : 1;
-        const msg =
-          !total
-            ? "Thanks for answering!"
-            : r === 1
-            ? "A perfect score. They really know you."
-            : r >= 0.6
-              ? "Pretty close. A few things to learn."
-              : "Time for more conversations.";
-        const status = h(
-          "p",
-          { class: "note" },
-          quiz.id ? "Sending your score..." : "",
-        );
+        // Only questions with a right answer are scored.
+        const graded = quiz.qs.filter((q) => !q.open).length;
+        const ask = graded === 0;
+        const ratio = graded ? score / graded : 0;
+
+        let msg;
+        if (ask) msg = "Thanks for answering!";
+        else if (ratio === 1) msg = "A perfect score. They really know you.";
+        else if (ratio >= 0.6) msg = "Pretty close. A few things to learn.";
+        else msg = "Time for more conversations.";
+
+        const status = h("p", { class: "note" }, quiz.id ? "Sending..." : "");
+
         app.replaceChildren(
           h(
             "div",
             { class: "card center enter" },
-            h("p", { class: "label" }, "Results"),
-            total ? h("div", { class: "score" }, `${score} / ${total}`) : null,
+            h("p", { class: "label" }, ask ? "Sent" : "Results"),
+            ask ? null : h("div", { class: "score" }, `${score} / ${graded}`),
             h("p", { class: "sub" }, msg),
             status,
+            ask
+              ? null
+              : h(
+                  "button",
+                  {
+                    class: "primary",
+                    type: "button",
+                    onclick: () => {
+                      idx = 0;
+                      score = 0;
+                      answers = [];
+                      renderQ();
+                    },
+                  },
+                  "Try again",
+                ),
             h(
               "button",
-              {
-                class: "primary",
-                onclick: () => {
-                  idx = 0;
-                  score = 0;
-                  answers = [];
-                  renderQ();
-                },
-              },
-              "Try again",
-            ),
-            h(
-              "button",
-              { class: "text", onclick: () => (location.href = "/") },
-              "Make your own quiz",
+              { class: "text", type: "button", onclick: () => (location.href = "/") },
+              "Back to start",
             ),
           ),
         );
+
         if (quiz.id) {
           fetch("/api/submit", {
             method: "POST",
@@ -1521,12 +1436,14 @@
           })
             .then((res) => {
               if (!res.ok) throw new Error();
-              status.textContent = total
-                ? "Your score was sent."
-                : "Your answer was sent.";
+              status.textContent = ask
+                ? "Your answer was sent."
+                : "Your score was sent.";
             })
             .catch(() => {
-              status.textContent = "Could not send your score.";
+              status.textContent = ask
+                ? "Could not send your answer."
+                : "Could not send your score.";
             });
         }
       }
@@ -1541,41 +1458,35 @@
             h("p", { class: "sub" }, "Ask them to send it again."),
             h(
               "button",
-              { class: "primary", onclick: () => (location.href = "/") },
-              "Make your own quiz",
+              { class: "primary", type: "button", onclick: () => (location.href = "/") },
+              "Back to start",
             ),
           ),
         );
       }
 
-      async function loadRemote(id) {
+      async function loadQuiz(id) {
         app.replaceChildren(
-          h(
-            "div",
-            { class: "card center" },
-            h("p", { class: "label" }, "Loading..."),
-          ),
+          h("div", { class: "card center" }, h("p", { class: "label" }, "Loading...")),
         );
         try {
           const res = await fetch(`/api/quiz?id=${encodeURIComponent(id)}`);
           if (!res.ok) throw new Error("not found");
           const data = await res.json();
-          quiz = { n: data.n, qs: data.qs, id, local: false };
+          quiz = { n: data.n, qs: data.qs, id };
           renderIntro();
         } catch (e) {
           renderError();
         }
       }
 
+      /* ---------- Results (for the creator) ---------- */
+
       async function loadResults(id) {
         const key =
           (location.hash.match(/key=([A-Za-z0-9_-]+)/) || [])[1] || "";
         app.replaceChildren(
-          h(
-            "div",
-            { class: "card center" },
-            h("p", { class: "label" }, "Loading..."),
-          ),
+          h("div", { class: "card center" }, h("p", { class: "label" }, "Loading...")),
         );
         let data;
         try {
@@ -1601,35 +1512,37 @@
 
       function renderResultsPage(data) {
         const attempts = data.attempts;
+        const hasGraded = data.qs.some((q) => !q.open);
 
-        // Count how many people missed each question, most missed first.
+        // Count misses for each question that has a right answer.
         const missCounts = data.qs.map(() => 0);
         attempts.forEach((a) =>
-          a.missed.forEach((qi) => (missCounts[qi] = (missCounts[qi] || 0) + 1)),
+          (a.missed || []).forEach((qi) => (missCounts[qi] = (missCounts[qi] || 0) + 1)),
         );
         const ranked = data.qs
           .map((q, qi) => ({ qi, q, n: missCounts[qi] }))
           .filter((x) => !x.q.open)
           .sort((a, b) => b.n - a.n);
+
         const summary =
-          attempts.length && data.qs.some((q) => !q.open)
-          ? h(
-              "div",
-              { class: "attempt" },
-              h("strong", {}, "Most missed"),
-              ...ranked.map(({ qi, q, n }) =>
-                h(
-                  "p",
-                  { class: "note" },
-                  `Question ${qi + 1}: missed by ${n} of ${attempts.length}`,
+          attempts.length && hasGraded
+            ? h(
+                "div",
+                { class: "attempt" },
+                h("strong", {}, "Most missed"),
+                ...ranked.map(({ qi, n }) =>
+                  h(
+                    "p",
+                    { class: "note" },
+                    `Question ${qi + 1}: missed by ${n} of ${attempts.length}`,
+                  ),
                 ),
-              ),
-            )
-          : null;
+              )
+            : null;
 
         const list = attempts.length
           ? attempts.map((a) => {
-              const missed = a.missed.map((qi) => {
+              const missed = (a.missed || []).map((qi) => {
                 const q = data.qs[qi];
                 const answer = q.t === "text" ? (q.accepted || [])[0] : q.opts[q.ans];
                 return h(
@@ -1654,31 +1567,30 @@
                   "div",
                   { class: "attempt-head" },
                   h("strong", {}, a.name || "Anonymous"),
-                  h(
-                    "span",
-                    {},
-                    a.total ? `${a.score} / ${a.total}` : "Answered",
-                  ),
+                  h("span", {}, a.total ? `${a.score} / ${a.total}` : "Answered"),
                 ),
                 h("p", { class: "note" }, new Date(a.at).toLocaleString()),
-                missed.length
-                  ? h("ul", { class: "missed" }, ...missed)
-                  : h("p", { class: "note" }, "Got every question right."),
                 typed.length ? h("ul", { class: "missed" }, ...typed) : null,
+                hasGraded
+                  ? missed.length
+                    ? h("ul", { class: "missed" }, ...missed)
+                    : h("p", { class: "note" }, "Got every question right.")
+                  : null,
               );
             })
-          : [h("p", { class: "sub" }, "No one has taken it yet.")];
+          : [h("p", { class: "sub" }, "No one has answered yet.")];
 
+        const count = attempts.length;
         app.replaceChildren(
           h(
             "div",
             { class: "card enter" },
             h("p", { class: "label" }, "Your results"),
-            h("h1", {}, `${data.n}'s quiz`),
+            h("h1", {}, `${data.n}'s ${hasGraded ? "quiz" : "question"}`),
             h(
               "p",
               { class: "sub" },
-              `${attempts.length} attempt${attempts.length === 1 ? "" : "s"} · ${data.qs.length} questions`,
+              `${count} ${count === 1 ? "response" : "responses"}`,
             ),
             summary,
             ...list,
@@ -1686,32 +1598,27 @@
         );
       }
 
-      function route() {
-        const m = location.pathname.match(/^\/q\/([A-Za-z0-9_-]+)\/?$/);
-        if (m) return loadRemote(m[1]);
-        const r = location.pathname.match(/^\/r\/([A-Za-z0-9_-]+)\/?$/);
-        if (r) return loadResults(r[1]);
+      /* ---------- Routing ---------- */
 
-        if (location.hash.startsWith("#q=")) {
-          try {
-            const data = JSON.parse(dec(location.hash.slice(3)));
-            const qs = (data.qs || [])
-              .filter((q) => q && q.q)
-              .map((q) => ({ ...q, t: q.t || "mc" }))
-              .filter((q) =>
-                q.t === "text"
-                  ? Array.isArray(q.accepted) && q.accepted.length >= 1
-                  : Array.isArray(q.opts) && q.opts.length >= 2,
-              );
-            if (!qs.length) throw new Error("empty");
-            quiz = { n: String(data.n || "Someone"), qs, local: true };
-            return renderIntro();
-          } catch (e) {
-            return renderError();
-          }
+      function route() {
+        const path = location.pathname.replace(/\/+$/, "");
+
+        let m = path.match(/^\/q\/([A-Za-z0-9_-]+)$/);
+        if (m) return loadQuiz(m[1]);
+
+        m = path.match(/^\/r\/([A-Za-z0-9_-]+)$/);
+        if (m) return loadResults(m[1]);
+
+        if (path === "/make") {
+          startDraft("quiz");
+          return renderBuilder();
+        }
+        if (path === "/ask") {
+          startDraft("ask");
+          return renderBuilder();
         }
 
-        renderBuilder();
+        renderHome();
       }
 
       route();
