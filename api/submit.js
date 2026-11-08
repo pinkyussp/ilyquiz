@@ -1,5 +1,6 @@
 const { redis } = require("../lib/redis");
 const { isCorrect } = require("../lib/grade");
+const { sendEmail, escapeHtml } = require("../lib/mail");
 
 module.exports = async (req, res) => {
   if (req.method !== "POST") {
@@ -17,16 +18,47 @@ module.exports = async (req, res) => {
     .trim()
     .slice(0, 40);
 
-  const missed = [];
+  // Save what people typed on open questions.
+  const texts = {};
   quiz.qs.forEach((q, qi) => {
-    if (!isCorrect(q, picks[qi])) missed.push(qi);
+    if (!q.open) return;
+    const typed = String(picks[qi] || "").trim().slice(0, 300);
+    if (typed) texts[qi] = typed;
   });
-  const total = quiz.qs.length;
+
+  // Only questions with a right answer are scored.
+  const graded = quiz.qs
+    .map((q, qi) => ({ q, qi }))
+    .filter((x) => !x.q.open);
+  const missed = graded
+    .filter((x) => !isCorrect(x.q, picks[x.qi]))
+    .map((x) => x.qi);
+  const total = graded.length;
   const score = total - missed.length;
 
-  const attempt = { name, score, total, missed, at: Date.now() };
+  const attempt = { name, score, total, missed, texts, at: Date.now() };
   await redis("LPUSH", "attempts:" + id, JSON.stringify(attempt));
   await redis("LTRIM", "attempts:" + id, "0", "199");
+
+  // Tell the creator someone finished.
+  if (quiz.email) {
+    const base = `https://${req.headers.host}`;
+    const who = name || "Someone";
+    try {
+      await sendEmail({
+        to: quiz.email,
+        subject: `${who} just took your quiz`,
+        html: `
+          <p><strong>${escapeHtml(who)}</strong> just finished your quiz.</p>
+          <p>Score: ${score} / ${total}</p>
+          <p>Open your results page (use the private link from your first email):<br/>
+          <a href="${base}/r/${id}">${base}/r/${id}</a></p>
+        `,
+      });
+    } catch (err) {
+      console.warn("Could not send finish email:", err.message);
+    }
+  }
 
   res.status(200).json({ score, total });
 };
