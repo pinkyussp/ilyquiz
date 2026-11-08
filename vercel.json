@@ -2,5 +2,8 @@
   "rewrites": [
     { "source": "/q/:id", "destination": "/index.html" },
     { "source": "/r/:id", "destination": "/index.html" }
+  ],
+  "redirects": [
+    { "source": "/quiz", "destination": "/", "permanent": false }
   ]
 }
