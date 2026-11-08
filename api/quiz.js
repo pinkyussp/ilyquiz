@@ -10,6 +10,11 @@ module.exports = async (req, res) => {
   const quiz = JSON.parse(raw);
   res.status(200).json({
     n: quiz.n,
-    qs: quiz.qs.map((q) => ({ q: q.q, opts: q.opts })),
+    // Never send answers to the person taking the quiz.
+    qs: quiz.qs.map((q) =>
+      q.t === "text"
+        ? { t: "text", q: q.q }
+        : { t: "mc", q: q.q, opts: q.opts },
+    ),
   });
 };
