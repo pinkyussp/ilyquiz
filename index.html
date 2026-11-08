@@ -18,6 +18,7 @@
         --muted: #8f7780;
         --rule: #f0dcd6;
         --accent: #e8a0a8;
+        --accent-soft: #f9e1e5;
         --ok: #3f6a48;
         --ok-bg: #cfe6d4;
         --no: #8a3b33;
@@ -25,6 +26,11 @@
       }
       * {
         box-sizing: border-box;
+        -webkit-tap-highlight-color: transparent;
+      }
+      button:focus:not(:focus-visible),
+      input:focus:not(:focus-visible) {
+        outline: none;
       }
       html,
       body {
@@ -93,22 +99,16 @@
           top 0.4s cubic-bezier(0.7, 0, 0.2, 1);
       }
       .menu-btn span:nth-child(1) {
-        top: 15px;
+        top: 17px;
       }
       .menu-btn span:nth-child(2) {
-        top: 21px;
-      }
-      .menu-btn span:nth-child(3) {
-        top: 27px;
+        top: 25px;
       }
       .menu-btn.open span:nth-child(1) {
         top: 21px;
         transform: rotate(45deg);
       }
       .menu-btn.open span:nth-child(2) {
-        opacity: 0;
-      }
-      .menu-btn.open span:nth-child(3) {
         top: 21px;
         transform: rotate(-45deg);
       }
@@ -242,6 +242,7 @@
         border-radius: 4px;
         padding: 10px 12px;
         outline: none;
+        transition: border-color 0.2s;
       }
       input[type="text"]:focus {
         border-color: var(--accent);
@@ -267,6 +268,11 @@
         text-transform: uppercase;
         color: var(--muted);
       }
+      .qslot {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
       .opt {
         display: flex;
         align-items: center;
@@ -280,6 +286,44 @@
         flex: none;
       }
 
+      /* Question type switch (Multiple choice / Write your answer) */
+      .typebar {
+        position: relative;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        background: #fff;
+        border: 1px solid var(--rule);
+        border-radius: 4px;
+        padding: 3px;
+      }
+      .typebar .pill {
+        position: absolute;
+        top: 3px;
+        bottom: 3px;
+        left: 3px;
+        width: calc(50% - 3px);
+        background: var(--accent-soft);
+        border-radius: 3px;
+        transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+        pointer-events: none;
+      }
+      .typebar.is-text .pill {
+        transform: translateX(100%);
+      }
+      .typebar button {
+        position: relative;
+        z-index: 1;
+        background: none;
+        border: none;
+        padding: 8px 6px;
+        font-size: 14px;
+        color: var(--muted);
+        transition: color 0.25s;
+      }
+      .typebar button.on {
+        color: var(--ink);
+      }
+
       button {
         font: inherit;
         font-size: 15px;
@@ -289,7 +333,8 @@
         transition:
           background 0.15s,
           color 0.15s,
-          border-color 0.15s;
+          border-color 0.15s,
+          transform 0.15s;
       }
       button.primary {
         background: var(--accent);
@@ -299,6 +344,9 @@
       button.primary:hover {
         background: #d78a93;
         border-color: #d78a93;
+      }
+      button.primary:active {
+        transform: scale(0.97);
       }
       button.ghost {
         background: transparent;
@@ -402,8 +450,15 @@
         flex-direction: column;
         gap: 10px;
       }
+      .hint {
+        margin: 0;
+        font-size: 13px;
+        color: var(--muted);
+      }
 
+      /* Multiple choice answers */
       .answer {
+        position: relative;
         display: block;
         width: 100%;
         text-align: left;
@@ -411,7 +466,12 @@
         color: var(--ink);
         border: 1px solid var(--rule);
         border-radius: 4px;
-        padding: 12px 14px;
+        padding: 12px 40px 12px 14px;
+        transition:
+          border-color 0.2s,
+          background 0.35s,
+          color 0.35s,
+          transform 0.15s;
       }
       .answer:hover:not(:disabled) {
         border-color: var(--ink);
@@ -419,15 +479,86 @@
       .answer:disabled {
         cursor: default;
       }
+      .stack .answer {
+        animation: rise 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+        animation-delay: calc(var(--d, 0) * 70ms);
+      }
+      .answer.picked {
+        animation: pop 0.32s ease;
+      }
       .answer.right {
         background: var(--ok-bg);
         border-color: var(--ok);
         color: var(--ok);
+        animation: glow 0.7s ease-out;
       }
       .answer.wrong {
         background: var(--no-bg);
         border-color: var(--no);
         color: var(--no);
+        animation: shake 0.45s ease;
+      }
+      .answer.right::after,
+      .answer.wrong::after {
+        position: absolute;
+        right: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 15px;
+      }
+      .answer.right::after {
+        content: "\2713";
+      }
+      .answer.wrong::after {
+        content: "\2715";
+      }
+      .answer.pending {
+        border-style: dashed;
+        border-color: var(--accent);
+        color: var(--muted);
+      }
+
+      /* Write your answer */
+      .textans {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      input.answerbox {
+        width: 100%;
+        font: inherit;
+        font-size: 16px;
+        color: var(--ink);
+        background: #fff;
+        border: 1px solid var(--rule);
+        border-radius: 4px;
+        padding: 12px 14px;
+        outline: none;
+        transition:
+          border-color 0.25s,
+          background 0.35s,
+          color 0.35s;
+      }
+      input.answerbox:focus {
+        border-color: var(--accent);
+      }
+      input.answerbox:disabled {
+        opacity: 1;
+      }
+      input.answerbox.right {
+        background: var(--ok-bg);
+        border-color: var(--ok);
+        color: var(--ok);
+        animation: glow 0.7s ease-out;
+      }
+      input.answerbox.wrong {
+        background: var(--no-bg);
+        border-color: var(--no);
+        color: var(--no);
+        animation: shake 0.45s ease;
+      }
+      input.answerbox.nudge {
+        animation: shake 0.45s ease;
       }
 
       #out {
@@ -466,10 +597,78 @@
         gap: 6px;
         font-size: 14px;
       }
-      .answer.pending {
-        border-style: dashed;
-        border-color: var(--accent);
-        color: var(--muted);
+
+      /* Motion */
+      @keyframes rise {
+        from {
+          opacity: 0;
+          transform: translateY(12px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+      @keyframes fade {
+        from {
+          opacity: 0;
+          transform: translateY(4px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+      @keyframes pop {
+        0% {
+          transform: scale(0.96);
+        }
+        60% {
+          transform: scale(1.02);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+      @keyframes glow {
+        0% {
+          box-shadow: 0 0 0 0 rgba(63, 106, 72, 0.4);
+        }
+        100% {
+          box-shadow: 0 0 0 12px rgba(63, 106, 72, 0);
+        }
+      }
+      @keyframes shake {
+        0%,
+        100% {
+          transform: translateX(0);
+        }
+        20% {
+          transform: translateX(-6px);
+        }
+        40% {
+          transform: translateX(6px);
+        }
+        60% {
+          transform: translateX(-4px);
+        }
+        80% {
+          transform: translateX(3px);
+        }
+      }
+      .enter {
+        animation: rise 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+      }
+      .fade-in {
+        animation: fade 0.35s ease both;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation: none !important;
+          transition: none !important;
+        }
       }
     </style>
   </head>
@@ -483,7 +682,7 @@
         aria-expanded="false"
         aria-controls="menu"
       >
-        <span></span><span></span><span></span>
+        <span></span><span></span>
       </button>
     </header>
 
@@ -544,6 +743,29 @@
         );
       }
 
+      // Same rules as lib/grade.js on the server. Used only for links that
+      // carry the quiz in the URL (#q=...).
+      function norm(s) {
+        return String(s == null ? "" : s)
+          .normalize("NFKD")
+          .replace(/[̀-ͯ]/g, "")
+          .toLowerCase()
+          .replace(/[^\p{L}\p{N}\s]/gu, "")
+          .replace(/\s+/g, " ")
+          .trim();
+      }
+      function isCorrectLocal(q, choice) {
+        if (q.t === "text") {
+          const typed = norm(choice);
+          return typed !== "" && (q.accepted || []).some((a) => norm(a) === typed);
+        }
+        return Number(choice) === q.ans;
+      }
+      function correctAnswerLocal(q) {
+        if (q.t === "text") return (q.accepted || [])[0] || "";
+        return q.ans;
+      }
+
       const QUESTION_BANK = [
         "What's my comfort food?",
         "Where did we first meet?",
@@ -593,7 +815,7 @@
                 class: "text",
                 type: "button",
                 onclick: () => {
-                  draft.qs.push({ q: text, opts: ["", ""], ans: 0 });
+                  draft.qs.push(newQuestion("mc", text));
                   renderBuilder();
                 },
               },
@@ -605,7 +827,17 @@
         return wrap;
       }
 
-      let draft = { name: "", qs: [{ q: "", opts: ["", ""], ans: 0 }] };
+      function newQuestion(t = "mc", q = "") {
+        return {
+          t,
+          q,
+          opts: ["", ""],
+          ans: 0,
+          accepted: [""],
+        };
+      }
+
+      let draft = { name: "", qs: [newQuestion()] };
 
       function renderBuilder() {
         app.replaceChildren(
@@ -617,7 +849,7 @@
             h(
               "p",
               { class: "sub" },
-              "Write a few questions about yourself, mark the right answer for each, then send them the link.",
+              "Write a few questions about yourself, then send them the link. Pick multiple choice, or let them write the answer.",
             ),
             h(
               "label",
@@ -639,7 +871,7 @@
                 {
                   class: "ghost",
                   onclick: () => {
-                    draft.qs.push({ q: "", opts: ["", ""], ans: 0 });
+                    draft.qs.push(newQuestion());
                     renderBuilder();
                   },
                 },
@@ -654,6 +886,13 @@
       }
 
       function questionEditor(qq, i) {
+        const slot = h("div", { class: "qslot" });
+        const refill = () =>
+          slot.replaceChildren(
+            qq.t === "text" ? textEditor(qq, refill) : mcEditor(qq, i),
+          );
+        refill();
+
         return h(
           "div",
           { class: "question" },
@@ -675,12 +914,55 @@
                 )
               : null,
           ),
+          typeSwitch(qq, refill),
           h("input", {
             type: "text",
             value: qq.q,
             placeholder: "Question",
             oninput: (e) => (qq.q = e.target.value),
           }),
+          slot,
+        );
+      }
+
+      // Sliding switch between the two question types. Updates in place so
+      // the pill can animate instead of the whole card re-rendering.
+      function typeSwitch(qq, refill) {
+        const bar = h("div", { class: "typebar" + (qq.t === "text" ? " is-text" : "") });
+        const mcBtn = h(
+          "button",
+          {
+            type: "button",
+            class: qq.t === "text" ? "" : "on",
+            onclick: () => setType("mc"),
+          },
+          "Multiple choice",
+        );
+        const textBtn = h(
+          "button",
+          {
+            type: "button",
+            class: qq.t === "text" ? "on" : "",
+            onclick: () => setType("text"),
+          },
+          "Write your answer",
+        );
+        function setType(t) {
+          if (qq.t === t) return;
+          qq.t = t;
+          bar.classList.toggle("is-text", t === "text");
+          mcBtn.classList.toggle("on", t === "mc");
+          textBtn.classList.toggle("on", t === "text");
+          refill();
+        }
+        bar.append(h("span", { class: "pill" }), mcBtn, textBtn);
+        return bar;
+      }
+
+      function mcEditor(qq, i) {
+        return h(
+          "div",
+          { class: "qslot" },
           ...qq.opts.map((o, j) =>
             h(
               "div",
@@ -741,16 +1023,79 @@
         );
       }
 
+      function textEditor(qq, refill) {
+        return h(
+          "div",
+          { class: "qslot" },
+          ...qq.accepted.map((a, j) =>
+            h(
+              "div",
+              { class: "opt" },
+              h("input", {
+                type: "text",
+                value: a,
+                placeholder:
+                  j === 0 ? "Answer" : "Also correct (optional)",
+                oninput: (e) => (qq.accepted[j] = e.target.value),
+              }),
+              j > 0
+                ? h(
+                    "button",
+                    {
+                      class: "text",
+                      title: "Remove answer",
+                      onclick: () => {
+                        qq.accepted.splice(j, 1);
+                        refill();
+                      },
+                    },
+                    "Remove",
+                  )
+                : null,
+            ),
+          ),
+          h(
+            "div",
+            { class: "row" },
+            qq.accepted.length < 6
+              ? h(
+                  "button",
+                  {
+                    class: "text",
+                    onclick: () => {
+                      qq.accepted.push("");
+                      refill();
+                    },
+                  },
+                  "Add another correct answer",
+                )
+              : null,
+            h(
+              "span",
+              { class: "note" },
+              "Capitals, spaces and punctuation don't matter.",
+            ),
+          ),
+        );
+      }
+
       async function makeLink() {
         const qs = draft.qs
           .map((qq) => {
+            const q = qq.q.trim();
+            if (qq.t === "text") {
+              const accepted = qq.accepted.map((s) => s.trim()).filter(Boolean);
+              return { t: "text", q, accepted };
+            }
             const opts = qq.opts.map((o) => o.trim()).filter(Boolean);
             const correct = (qq.opts[qq.ans] || "").trim();
             let ans = opts.indexOf(correct);
             if (ans < 0) ans = 0;
-            return { q: qq.q.trim(), opts, ans };
+            return { t: "mc", q, opts, ans };
           })
-          .filter((x) => x.q && x.opts.length >= 2);
+          .filter((x) =>
+            x.t === "text" ? x.q && x.accepted.length >= 1 : x.q && x.opts.length >= 2,
+          );
 
         const out = document.querySelector("#out");
         if (!draft.name.trim() || !qs.length) {
@@ -758,7 +1103,7 @@
             h(
               "p",
               { class: "err" },
-              "Add your name and at least one question with two answers.",
+              "Add your name and at least one complete question.",
             ),
           );
           return;
@@ -850,14 +1195,18 @@
       let quiz = null,
         idx = 0,
         score = 0,
-        picked = null,
         answers = [],
         takerName = "";
 
+      // Returns { correct, answer }. For multiple choice, answer is the
+      // correct option index. For write-your-answer, it is the correct text.
       async function checkAnswer(qi, choice) {
         if (quiz.local) {
           const q = quiz.qs[qi];
-          return { correct: choice === q.ans, answer: q.ans };
+          return {
+            correct: isCorrectLocal(q, choice),
+            answer: correctAnswerLocal(q),
+          };
         }
         const res = await fetch("/api/answer", {
           method: "POST",
@@ -872,7 +1221,7 @@
         app.replaceChildren(
           h(
             "div",
-            { class: "card center" },
+            { class: "card center enter" },
             h("p", { class: "label" }, "A quiz for you"),
             h("h1", {}, `${quiz.n} made you a quiz`),
             h(
@@ -913,64 +1262,139 @@
         );
       }
 
+      function shake(el) {
+        el.classList.remove("nudge");
+        void el.offsetWidth;
+        el.classList.add("nudge");
+      }
+
       function renderQ() {
         const qq = quiz.qs[idx];
-        picked = null;
         const fb = h("p", { class: "feedback" });
         const nextSlot = h("div", {});
-        let btns = [];
 
-        async function pick(j) {
-          if (picked !== null) return;
-          picked = j;
-          answers[idx] = j;
-          btns.forEach((b) => (b.disabled = true));
-          btns[j].classList.add("pending");
-          fb.textContent = "Checking...";
-          try {
-            const r = await checkAnswer(idx, j);
-            btns[j].classList.remove("pending");
-            if (r.correct) {
-              score++;
-              fb.textContent = "Correct. You know them well.";
-              btns[j].classList.add("right");
-            } else {
-              fb.textContent = "Not quite. It's fine.";
-              btns[j].classList.add("wrong");
-              btns[r.answer].classList.add("right");
-            }
-            nextSlot.append(
-              h(
-                "button",
-                { class: "primary", onclick: next },
-                idx + 1 < quiz.qs.length ? "Next" : "See results",
-              ),
-            );
-          } catch (err) {
-            picked = null;
-            btns.forEach((b) => {
-              b.disabled = false;
-              b.classList.remove("pending");
-            });
-            fb.textContent = err.message;
-          }
+        function showNext() {
+          nextSlot.append(
+            h(
+              "button",
+              { class: "primary enter", onclick: next },
+              idx + 1 < quiz.qs.length ? "Next" : "See results",
+            ),
+          );
         }
 
-        btns = qq.opts.map((o, j) =>
-          h("button", { class: "answer", onclick: () => pick(j) }, o),
-        );
+        function finish(r, typed) {
+          if (r.correct) {
+            score++;
+            fb.textContent = "Correct. You know them well.";
+          } else {
+            fb.textContent =
+              qq.t === "text"
+                ? `Not quite. It was "${r.answer}". It's fine.`
+                : "Not quite. It's fine.";
+          }
+          fb.classList.add("fade-in");
+          showNext();
+        }
+
+        // Multiple choice
+        function mcBody() {
+          let picked = null;
+          let btns = [];
+
+          async function pick(j) {
+            if (picked !== null) return;
+            picked = j;
+            answers[idx] = j;
+            btns.forEach((b) => (b.disabled = true));
+            btns[j].classList.add("pending", "picked");
+            fb.textContent = "Checking...";
+            try {
+              const r = await checkAnswer(idx, j);
+              btns[j].classList.remove("pending");
+              if (r.correct) {
+                btns[j].classList.add("right");
+              } else {
+                btns[j].classList.add("wrong");
+                btns[r.answer].classList.add("right");
+              }
+              finish(r);
+            } catch (err) {
+              picked = null;
+              btns.forEach((b) => {
+                b.disabled = false;
+                b.classList.remove("pending", "picked");
+              });
+              fb.textContent = err.message;
+            }
+          }
+
+          btns = qq.opts.map((o, j) => {
+            const b = h("button", { class: "answer", onclick: () => pick(j) }, o);
+            b.style.setProperty("--d", j);
+            return b;
+          });
+          return h("div", { class: "stack" }, ...btns);
+        }
+
+        // Write your answer
+        function textBody() {
+          let done = false;
+          const input = h("input", {
+            type: "text",
+            class: "answerbox",
+            placeholder: "Type your answer",
+            autocomplete: "off",
+            onkeydown: (e) => {
+              if (e.key === "Enter") submit();
+            },
+          });
+          const submitBtn = h(
+            "button",
+            { class: "primary", onclick: submit },
+            "Check",
+          );
+
+          async function submit() {
+            if (done) return;
+            const typed = input.value.trim();
+            if (!typed) {
+              fb.textContent = "Type something first.";
+              shake(input);
+              return;
+            }
+            done = true;
+            input.disabled = true;
+            submitBtn.disabled = true;
+            fb.textContent = "Checking...";
+            try {
+              const r = await checkAnswer(idx, typed);
+              answers[idx] = typed;
+              input.classList.add(r.correct ? "right" : "wrong");
+              submitBtn.remove();
+              finish(r);
+            } catch (err) {
+              done = false;
+              input.disabled = false;
+              submitBtn.disabled = false;
+              fb.textContent = err.message;
+            }
+          }
+
+          return h("div", { class: "textans" }, input, submitBtn);
+        }
 
         app.replaceChildren(
           h(
             "div",
-            { class: "card" },
+            { class: "card enter" },
             h(
               "p",
               { class: "label" },
               `Question ${idx + 1} of ${quiz.qs.length}`,
             ),
             h("h2", {}, qq.q),
-            h("div", { class: "stack" }, ...btns),
+            qq.t === "text" ? textBody() : mcBody(),
             fb,
             nextSlot,
           ),
@@ -1000,7 +1424,7 @@
         app.replaceChildren(
           h(
             "div",
-            { class: "card center" },
+            { class: "card center enter" },
             h("p", { class: "label" }, "Results"),
             h("div", { class: "score" }, `${score} / ${total}`),
             h("p", { class: "sub" }, msg),
@@ -1115,15 +1539,40 @@
 
       function renderResultsPage(data) {
         const attempts = data.attempts;
+
+        // Count how many people missed each question, most missed first.
+        const missCounts = data.qs.map(() => 0);
+        attempts.forEach((a) =>
+          a.missed.forEach((qi) => (missCounts[qi] = (missCounts[qi] || 0) + 1)),
+        );
+        const ranked = data.qs
+          .map((q, qi) => ({ qi, q, n: missCounts[qi] }))
+          .sort((a, b) => b.n - a.n);
+        const summary = attempts.length
+          ? h(
+              "div",
+              { class: "attempt" },
+              h("strong", {}, "Most missed"),
+              ...ranked.map(({ qi, q, n }) =>
+                h(
+                  "p",
+                  { class: "note" },
+                  `Question ${qi + 1}: missed by ${n} of ${attempts.length}`,
+                ),
+              ),
+            )
+          : null;
+
         const list = attempts.length
           ? attempts.map((a) => {
               const missed = a.missed.map((qi) => {
                 const q = data.qs[qi];
+                const answer = q.t === "text" ? (q.accepted || [])[0] : q.opts[q.ans];
                 return h(
                   "li",
                   {},
-                  q.q,
-                  h("span", { class: "note" }, ` Answer: ${q.opts[q.ans]}`),
+                  `Question ${qi + 1}: ${q.q}`,
+                  h("span", { class: "note" }, ` Answer: ${answer}`),
                 );
               });
               return h(
@@ -1146,7 +1595,7 @@
         app.replaceChildren(
           h(
             "div",
-            { class: "card" },
+            { class: "card enter" },
             h("p", { class: "label" }, "Your results"),
             h("h1", {}, `${data.n}'s quiz`),
             h(
@@ -1154,6 +1603,7 @@
               { class: "sub" },
               `${attempts.length} attempt${attempts.length === 1 ? "" : "s"} · ${data.qs.length} questions`,
             ),
+            summary,
             ...list,
           ),
         );
@@ -1168,9 +1618,14 @@
         if (location.hash.startsWith("#q=")) {
           try {
             const data = JSON.parse(dec(location.hash.slice(3)));
-            const qs = (data.qs || []).filter(
-              (q) => q && q.q && Array.isArray(q.opts) && q.opts.length >= 2,
-            );
+            const qs = (data.qs || [])
+              .filter((q) => q && q.q)
+              .map((q) => ({ ...q, t: q.t || "mc" }))
+              .filter((q) =>
+                q.t === "text"
+                  ? Array.isArray(q.accepted) && q.accepted.length >= 1
+                  : Array.isArray(q.opts) && q.opts.length >= 2,
+              );
             if (!qs.length) throw new Error("empty");
             quiz = { n: String(data.n || "Someone"), qs, local: true };
             return renderIntro();
