@@ -43,15 +43,36 @@ module.exports = async (req, res) => {
   // Tell the creator someone finished.
   if (quiz.email) {
     const base = `https://${req.headers.host}`;
-    const who = name || "Someone";
+    const who = escapeHtml(name || "Someone");
+
+    // Show a score only when there is one.
+    const scoreLine = total
+      ? `<p>Score: ${score} / ${total}</p>`
+      : "";
+
+    // List what they typed on open questions.
+    const typedLines = Object.entries(texts)
+      .map(
+        ([qi, t]) =>
+          `<p><strong>${escapeHtml(quiz.qs[Number(qi)].q)}</strong><br/>${escapeHtml(t)}</p>`,
+      )
+      .join("");
+
+    const headline = total
+      ? `<strong>${who}</strong> just finished your quiz.`
+      : `<strong>${who}</strong> just answered your question.`;
+
     try {
       await sendEmail({
         to: quiz.email,
-        subject: `${who} just took your quiz`,
+        subject: total
+          ? `${name || "Someone"} just took your quiz`
+          : `${name || "Someone"} just answered your question`,
         html: `
-          <p><strong>${escapeHtml(who)}</strong> just finished your quiz.</p>
-          <p>Score: ${score} / ${total}</p>
-          <p>Open your results page (use the private link from your first email):<br/>
+          <p>${headline}</p>
+          ${scoreLine}
+          ${typedLines}
+          <p>See everyone's answers on your results page (use the private link from your first email):<br/>
           <a href="${base}/r/${id}">${base}/r/${id}</a></p>
         `,
       });
