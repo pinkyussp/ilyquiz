@@ -11,10 +11,9 @@ module.exports = async (req, res) => {
   res.status(200).json({
     n: quiz.n,
     // Never send answers to the person taking the quiz.
-    qs: quiz.qs.map((q) =>
-      q.t === "text"
-        ? { t: "text", q: q.q }
-        : { t: "mc", q: q.q, opts: q.opts },
-    ),
+    qs: quiz.qs.map((q) => {
+      if (q.t === "text") return { t: "text", q: q.q, open: !!q.open };
+      return { t: "mc", q: q.q, opts: q.opts };
+    }),
   });
 };
