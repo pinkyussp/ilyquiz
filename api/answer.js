@@ -1,4 +1,5 @@
 const { redis } = require("../lib/redis");
+const { isCorrect, correctAnswer } = require("../lib/grade");
 
 module.exports = async (req, res) => {
   if (req.method !== "POST") {
@@ -15,7 +16,7 @@ module.exports = async (req, res) => {
   if (!q) return res.status(400).json({ error: "Question not found." });
 
   res.status(200).json({
-    correct: Number(body.choice) === q.ans,
-    answer: q.ans,
+    correct: isCorrect(q, body.choice),
+    answer: correctAnswer(q),
   });
 };
