@@ -1508,6 +1508,23 @@
 
         const key =
           (location.hash.match(/key=([A-Za-z0-9_-]+)/) || [])[1] || "";
+
+        if (!key) {
+          app.replaceChildren(
+            h(
+              "div",
+              { class: "card enter" },
+              h("p", { class: "label" }, "Results"),
+              h("h1", {}, "Open your private link"),
+              h(
+                "p",
+                { class: "sub" },
+                "This page needs the private link you got when you made the quiz. It ends with #key= and is in your first email.",
+              ),
+            ),
+          );
+          return;
+        }
         app.replaceChildren(
           h("div", { class: "card center" }, h("p", { class: "label" }, "Loading...")),
         );
