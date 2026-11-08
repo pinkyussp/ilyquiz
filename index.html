@@ -3,7 +3,24 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>How well do you know me?</title>
+    <title>How well do you know me? Make a quiz or ask a question</title>
+    <meta
+      name="description"
+      content="Make a quiz about yourself for friends, or ask a question and read their answers. Free, no account needed."
+    />
+    <meta name="keywords" content="quiz maker, make a quiz, how well do you know me, ask a question, friends quiz" />
+    <meta name="author" content="amy" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://quiz.yussp.pink/" />
+    <meta name="theme-color" content="#fbf3f0" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="How well do you know me?" />
+    <meta property="og:title" content="How well do you know me? Make a quiz or ask a question" />
+    <meta property="og:description" content="Make a quiz about yourself for friends, or ask a question and read their answers." />
+    <meta property="og:url" content="https://quiz.yussp.pink/" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="How well do you know me?" />
+    <meta name="twitter:description" content="Make a quiz about yourself for friends, or ask a question and read their answers." />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -1483,6 +1500,12 @@
       /* ---------- Results (for the creator) ---------- */
 
       async function loadResults(id) {
+        // Private creator pages should never appear in search.
+        const robots = document.createElement("meta");
+        robots.name = "robots";
+        robots.content = "noindex, nofollow";
+        document.head.append(robots);
+
         const key =
           (location.hash.match(/key=([A-Za-z0-9_-]+)/) || [])[1] || "";
         app.replaceChildren(
