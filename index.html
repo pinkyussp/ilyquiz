@@ -1098,12 +1098,32 @@
           );
 
         const out = document.querySelector("#out");
-        if (!draft.name.trim() || !qs.length) {
+
+        // Say exactly what is missing. Completely empty question slots are ignored.
+        const problems = [];
+        if (!draft.name.trim()) problems.push("Add your name.");
+        draft.qs.forEach((qq, i) => {
+          const filled =
+            qq.t === "text"
+              ? qq.accepted.filter((s) => s.trim())
+              : qq.opts.filter((o) => o.trim());
+          if (!qq.q.trim() && !filled.length) return;
+          const n = i + 1;
+          if (!qq.q.trim()) problems.push(`Question ${n} needs question text.`);
+          if (qq.t === "text") {
+            if (!filled.length)
+              problems.push(`Question ${n} needs a correct answer.`);
+          } else if (filled.length < 2) {
+            problems.push(`Question ${n} needs at least two answers.`);
+          }
+        });
+
+        if (problems.length || !qs.length) {
           out.replaceChildren(
             h(
               "p",
               { class: "err" },
-              "Add your name and at least one complete question.",
+              problems.join(" ") || "Add at least one complete question.",
             ),
           );
           return;
