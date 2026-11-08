@@ -1,4 +1,5 @@
 const { redis } = require("../lib/redis");
+const { isCorrect } = require("../lib/grade");
 
 module.exports = async (req, res) => {
   if (req.method !== "POST") {
@@ -18,7 +19,7 @@ module.exports = async (req, res) => {
 
   const missed = [];
   quiz.qs.forEach((q, qi) => {
-    if (Number(picks[qi]) !== q.ans) missed.push(qi);
+    if (!isCorrect(q, picks[qi])) missed.push(qi);
   });
   const total = quiz.qs.length;
   const score = total - missed.length;
