@@ -1,9 +1,11 @@
 {
   "rewrites": [
     { "source": "/q/:id", "destination": "/index.html" },
-    { "source": "/r/:id", "destination": "/index.html" }
+    { "source": "/r/:id", "destination": "/index.html" },
+    { "source": "/make", "destination": "/index.html" },
+    { "source": "/ask", "destination": "/index.html" }
   ],
   "redirects": [
-    { "source": "/quiz", "destination": "/", "permanent": false }
+    { "source": "/quiz", "destination": "/make", "permanent": false }
   ]
 }
