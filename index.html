@@ -837,7 +837,7 @@
         };
       }
 
-      let draft = { name: "", qs: [newQuestion()] };
+      let draft = { name: "", email: "", qs: [newQuestion()] };
 
       function renderBuilder() {
         app.replaceChildren(
@@ -860,6 +860,17 @@
                 value: draft.name,
                 placeholder: "Your name",
                 oninput: (e) => (draft.name = e.target.value),
+              }),
+            ),
+            h(
+              "label",
+              { class: "field" },
+              "Your email (optional, for updates when someone finishes)",
+              h("input", {
+                type: "text",
+                value: draft.email,
+                placeholder: "you@example.com",
+                oninput: (e) => (draft.email = e.target.value),
               }),
             ),
             ...draft.qs.map((qq, i) => questionEditor(qq, i)),
@@ -1023,7 +1034,7 @@
         );
       }
 
-      function textEditor(qq, refill) {
+      function textAnswerFields(qq, refill) {
         return h(
           "div",
           { class: "qslot" },
@@ -1067,7 +1078,7 @@
                       refill();
                     },
                   },
-                  "Add another correct answer",
+                  "Add another answer",
                 )
               : null,
             h(
@@ -1079,13 +1090,18 @@
         );
       }
 
+      // Write-your-answer editor: the correct answer and any others that count.
+      function textEditor(qq, refill) {
+        return h("div", { class: "qslot" }, textAnswerFields(qq, refill));
+      }
+
       async function makeLink() {
         const qs = draft.qs
           .map((qq) => {
             const q = qq.q.trim();
             if (qq.t === "text") {
               const accepted = qq.accepted.map((s) => s.trim()).filter(Boolean);
-              return { t: "text", q, accepted };
+              return { t: "text", q, accepted: qq.open ? [] : accepted, open: !!qq.open };
             }
             const opts = qq.opts.map((o) => o.trim()).filter(Boolean);
             const correct = (qq.opts[qq.ans] || "").trim();
@@ -1094,7 +1110,9 @@
             return { t: "mc", q, opts, ans };
           })
           .filter((x) =>
-            x.t === "text" ? x.q && x.accepted.length >= 1 : x.q && x.opts.length >= 2,
+            x.t === "text"
+              ? x.q && (x.open || x.accepted.length >= 1)
+              : x.q && x.opts.length >= 2,
           );
 
         const out = document.querySelector("#out");
@@ -1111,7 +1129,7 @@
           const n = i + 1;
           if (!qq.q.trim()) problems.push(`Question ${n} needs question text.`);
           if (qq.t === "text") {
-            if (!filled.length)
+            if (!qq.open && !filled.length)
               problems.push(`Question ${n} needs a correct answer.`);
           } else if (filled.length < 2) {
             problems.push(`Question ${n} needs at least two answers.`);
@@ -1134,7 +1152,11 @@
           const res = await fetch("/api/create", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ n: draft.name.trim(), qs }),
+            body: JSON.stringify({
+              n: draft.name.trim(),
+              email: draft.email.trim(),
+              qs,
+            }),
           });
           const data = await res.json();
           if (!res.ok)
@@ -1223,6 +1245,7 @@
       async function checkAnswer(qi, choice) {
         if (quiz.local) {
           const q = quiz.qs[qi];
+          if (q.open) return { open: true };
           return {
             correct: isCorrectLocal(q, choice),
             answer: correctAnswerLocal(q),
@@ -1390,9 +1413,15 @@
             try {
               const r = await checkAnswer(idx, typed);
               answers[idx] = typed;
-              input.classList.add(r.correct ? "right" : "wrong");
               submitBtn.remove();
-              finish(r);
+              if (r.open) {
+                fb.textContent = "Saved. Thanks for answering!";
+                fb.classList.add("fade-in");
+                showNext();
+              } else {
+                input.classList.add(r.correct ? "right" : "wrong");
+                finish(r);
+              }
             } catch (err) {
               done = false;
               input.disabled = false;
@@ -1428,10 +1457,12 @@
       }
 
       function renderResults() {
-        const total = quiz.qs.length;
-        const r = score / total;
+        const total = quiz.qs.filter((q) => !q.open).length;
+        const r = total ? score / total : 1;
         const msg =
-          r === 1
+          !total
+            ? "Thanks for answering!"
+            : r === 1
             ? "A perfect score. They really know you."
             : r >= 0.6
               ? "Pretty close. A few things to learn."
@@ -1446,7 +1477,7 @@
             "div",
             { class: "card center enter" },
             h("p", { class: "label" }, "Results"),
-            h("div", { class: "score" }, `${score} / ${total}`),
+            h("div", { class: "score" }, total ? `${score} / ${total}` : "✓"),
             h("p", { class: "sub" }, msg),
             status,
             h(
@@ -1567,6 +1598,7 @@
         );
         const ranked = data.qs
           .map((q, qi) => ({ qi, q, n: missCounts[qi] }))
+          .filter((x) => !x.q.open)
           .sort((a, b) => b.n - a.n);
         const summary = attempts.length
           ? h(
@@ -1595,6 +1627,14 @@
                   h("span", { class: "note" }, ` Answer: ${answer}`),
                 );
               });
+              const typed = Object.entries(a.texts || {}).map(([qi, t]) =>
+                h(
+                  "li",
+                  {},
+                  `Question ${Number(qi) + 1}: ${data.qs[Number(qi)].q} `,
+                  h("span", { class: "note" }, `→ ${t}`),
+                ),
+              );
               return h(
                 "div",
                 { class: "attempt" },
@@ -1608,6 +1648,7 @@
                 missed.length
                   ? h("ul", { class: "missed" }, ...missed)
                   : h("p", { class: "note" }, "Got every question right."),
+                typed.length ? h("ul", { class: "missed" }, ...typed) : null,
               );
             })
           : [h("p", { class: "sub" }, "No one has taken it yet.")];
